@@ -8,3 +8,9 @@
     display: inline-block;
     font-size: 16px;
   }
+
+  .topBar{
+    background-color: antiquewhite;
+    
+    height: 100px;
+  }
