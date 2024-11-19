@@ -1,0 +1,43 @@
+/* styles.css */
+body {
+    margin: 0;
+    font-family: Arial, sans-serif;
+    background-color: #a3c1ad; /* Background color for the body */
+  }
+  
+  .top-bar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 10px 20px;
+    background-color: #317873; /* Background color for the top bar */
+    color: #f4f4f4; /* Light color for text */
+  }
+  
+  .logo {
+    font-size: 24px;
+    font-weight: bold;
+    color: #a0d6b4; /* Color for the logo text */
+  }
+  
+  .nav-links {
+    list-style: none;
+    display: flex;
+    gap: 20px;
+  }
+  
+  .nav-links li {
+    margin: 0;
+  }
+  
+  .nav-links a {
+    color: #f4f4f4; /* Color for the links */
+    text-decoration: none;
+    font-size: 18px;
+  }
+  
+  .nav-links a:hover {
+    color: #5f9ea0; /* Color when hovering over the links */
+    text-decoration: underline;
+  }
+  
