@@ -58,4 +58,36 @@ body {
     padding: 5px;
     
   }
-  
+
+  #job-posting-form label {
+      font-size: 16px;
+      font-weight: bold;
+      margin-bottom: 8px;
+      display: block;
+  }
+
+  #job-posting-form input,
+  #job-posting-form select {
+      width: 100%;
+      padding: 10px;
+      margin-bottom: 20px;
+      box-sizing: border-box;
+      border: 1px solid #ccc;
+      border-radius: 5px;
+      font-size: 16px;
+  }
+
+  #job-posting-form input:focus,
+  #job-posting-form select:focus {
+      border-color: #007BFF;
+      outline: none;
+  }
+
+  #job-posting-form input,
+  #job-posting-form select {
+      box-shadow: 2px 2px 5px rgba(0, 0, 0, 0.1);
+  }
+
+  #job-posting-form p {
+      margin: 0;
+  }

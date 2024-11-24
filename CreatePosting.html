@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Create-a-posting</title>
+    <link rel="stylesheet" href="styles.css">
+  </head>
+  <body>
+    <div class="top-bar">
+        <a href="index.html"><div class="logo">MyWebsite</div></a>
+            <ul class="nav-links">
+                <li><a href="">View applications</a></li>
+                <li><a href="">Register</a></li>
+                <li><a href="login.html">Log in</a></li>
+            </ul>
+    </div>
+
+    <!-- Job Posting Form Section -->
+    <div class="posting-container">
+      <h2>Create a Job Posting</h2>
+      <form id="job-posting-form">
+        <label for="job-company" >Company Name:</label>
+        <input type="text" id="job-company" name="jobCompany" required style="width: 50%; padding: 10px; margin: 25px; align-items: center; justify-content: center; display: flex;box-shadow: 2px 2px 5px gray;"><p></p>
+
+        <label for="job-title" >Job Title:</label>
+        <input type="text" id="job-title" name="jobTitle" required style="width: 50%; padding: 10px; margin: 25px; align-items: center; justify-content: center; display: flex;box-shadow: 2px 2px 5px gray;"><p></p>
+        
+        <label for="job-description" >Job Description:</label>
+        <input type="text" id = "job-description"name="jobDescription" required style="width: 50%; padding: 10px; margin: 25px; align-items: center; justify-content: center; display: flex;box-shadow: 2px 2px 5px gray;"></input><p></p>
+        
+        <label for="required-skills">Required Skills:</label>
+        <input type="text" id="required-skills" name="requiredSkills" placeholder="e.g., JavaScript, teamwork" required style="width: 50%; padding: 10px; margin: 25px; align-items: center; justify-content: center; display: flex;box-shadow: 2px 2px 5px gray;"><p></p>
+        
+        <label for="salary-range">Salary Range:</label>
+        <input type="text" id="salary-range" name="salaryRange" placeholder="e.g., $50,000 - $60,000" required  style="width: 50%; padding: 10px; margin: 25px; align-items: center; justify-content: center; display: flex;box-shadow: 2px 2px 5px gray;"><p></p>
+        
+        <label for="job-location" >Location:</label>
+        <input type="text" id="job-location" name="jobLocation" required style="width: 50%; padding: 10px; margin: 25px; align-items: center; justify-content: center; display: flex;box-shadow: 2px 2px 5px gray;" ><p></p>
+        
+        <label for="job-type" >Job Type:</label>
+        <select id="job-type" name="jobType" required style="width: 50%; padding: 10px; margin: 25px; align-items: center; justify-content: center; display: flex; box-shadow: 2px 2px 5px gray;">
+          <option value="full-time">Full-Time</option>
+          <option value="part-time">Part-Time</option>
+          <option value="internship">Internship</option>
+        </select><p></p>
+
+        <button style="box-shadow: 2px 2px 5px gray; cursor: pointer; padding: 15px; justify-content: center;">POST JOB</button>
+      </form>
+    </div>
+    <script>
+        const jobDataList = [];
+        document.getElementById("job-posting-form").addEventListener("submit", function(event) {
+            event.preventDefault();
+            jobDataList.append({companyName: document.getElementById('job-company').value,
+            title: document.getElementById('job-title').value,
+            description: document.getElementById('job-description').value,
+            skills: document.getElementById('required-skills').value,
+            salary: document.getElementById('salary-range').value,
+            location: document.getElementById('job-location').value,
+            type: document.getElementById('job-type').value});
+        });
+        function getJobDataById(id) {
+            return jobDataList.find(job => job.id == id);
+        }
+    </script>
+  </body>
+</html>
