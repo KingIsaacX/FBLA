@@ -4,20 +4,59 @@
         <meta charset="UTF-8">
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
         <title>Backend</title>
-        <link rel="stylesheet" href="./assets/styles.css">
-
+        <link rel="stylesheet" href="styles.css">
     </head>
-    <body>
-        <div class="top-bar">
-            <a href="index.html"><div class="logo">Home</div></a>
-                <ul class="nav-links">
-                    <li><a href="">View applications</a></li>
-                    <li><a href="">Register</a></li>
-                    <li><a href="login.html">Log in</a></li>
-                </ul>
+<body>
+    <div class="top-bar">
+        <a href="index.html"><div class="logo">MyWebsite</div></a>
+            <ul class="nav-links">
+                <li><a href="">View applications</a></li>
+                <li><a href="">Register</a></li>
+                <li><a href="login.html">Log in</a></li> 
+            </ul>
         </div>
+    <div id="info-Container"></div>
+    
+    <script>
+        const container = document.getElementById("info-Container");
 
+        const allArrays = JSON.parse(localStorage.getItem('allArrays')) || [];
 
+        allArrays.forEach((jobArray, index) => {
+            const jobGroupDiv = document.createElement('div');
+            jobGroupDiv.style.margin = "10px";
+            jobGroupDiv.style.padding = "10px";
+            jobGroupDiv.style.border = "1px solid black";
 
-    </body>
+            jobArray.forEach((job) => {
+                const jobDetails = `
+                    <p><strong>Company:</strong> ${job.companyName}</p>
+                    <p><strong>Title:</strong> ${job.title}</p>
+                    <p><strong>Description:</strong> ${job.description}</p>
+                    <p><strong>Skills:</strong> ${job.skills}</p>
+                    <p><strong>Salary:</strong> ${job.salary}</p>
+                    <p><strong>Location:</strong> ${job.location}</p>
+                    <p><strong>Type:</strong> ${job.type}</p>
+                    <hr>
+                `;
+                const acceptButton = document.createElement('button');
+                acceptButton.textContent='Accept';
+                acceptButton.classList.add('accept-button');
+
+                const denyButton = document.createElement('button');
+                denyButton.textContent='Deny';
+                denyButton.classList.add('deny-button');
+
+                
+            });
+            jobGroupDiv.innerHTML = jobDetails;
+            jobDetails.appendChild(acceptButton);
+            jobDetails.appendChild(denyButton);
+
+            jobGroupDiv.appendChild(jobDetails);
+            
+            container.appendChild(jobGroupDiv);
+        });
+    </script>
+</body>
 </html>

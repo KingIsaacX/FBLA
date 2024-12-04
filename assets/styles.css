@@ -112,3 +112,22 @@ body {
   #job-posting-form p {
       margin: 0;
   }
+
+  .accept-button {
+    background-color: #00D11C;
+    border: none;
+    color: white;
+    padding: 15px 15px;
+    text-align: center;
+    text-decoration: none;
+    font-size: 15px;
+  }
+  .deny-button {
+    background-color: #A30000;
+    border: none;
+    color: white;
+    padding: 15px 15px;
+    text-align: center;
+    text-decoration: none;
+    font-size: 15px;
+  }
