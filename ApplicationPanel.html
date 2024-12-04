@@ -4,21 +4,55 @@
         <meta charset="UTF-8">
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
         <title>Application</title>
-        <link rel="stylesheet" href="styling.css">
+        <link rel="stylesheet" href="./assets/styles.css">
     
     </head>
     <body>
-        <div class="application-container">
-            <h2>Create an Application</h2>
-            <form id="Application-posting-form"></form>
+      <div class="top-bar">
+        <a href="index.html"><div class="logo">Home</div></a>
+            <ul class="nav-links">
+                <li><a href="">View applications</a></li>
+                <li><a href="">Register</a></li>
+                <li><a href="login.html">Log in</a></li>
+            </ul>
+      </div>
 
-                <label for="Applicant Full name" >Applicant Full Name:</label>
-                <input type="text" id="applicant-name" name="applicantName" style="width: 50%; padding: 10px; margin: 25px; align-items: center; justify-content: center; display: flex;box-shadow: 2px 2px 5px gray;"><p></p>
+      
+        <div class="posting-container">
+            <h2>Apply to a posting</h2>
+            <form id="job-application-form">
+              <label for="first-name" >First Name:</label>
+              <input type="text" id="first-name" name="firstName" required class=box-style><p></p>
+      
+              <label for="last-name" >Last Name:</label>
+              <input type="text" id="first-name" name="firstName" required class=box-style><p></p>
+      
 
-                <label for="Contact Information" >Cantact Info:</label>
-                <input type="text" id="contact-Info" name="contactInfo" placeholder="johndoe555@gmail.com" style="width: 50%; padding: 10px; margin: 25px; align-items: center; justify-content: center; display: flex;box-shadow: 2px 2px 5px gray;"><p></p><br>
-                <input type="text" id="contact-Info" name="contactInfo" placeholder="johndoe555@gmail.com" style="width: 50%; padding: 10px; margin: 25px; align-items: center; justify-content: center; display: flex;box-shadow: 2px 2px 5px gray;"><p></p>
-        </div>
-        
+
+              <label for="job-title" >Phone Number:</label>
+              <input type="text" id="job-title" name="jobTitle" required class=box-style><p></p>
+              
+              <label for="job-title" >Email:</label>
+              <input type="text" id="job-title" name="jobTitle" required class=box-style><p></p>
+              
+
+
+
+              <label for="education-box">Education:</label>
+              <textarea id="education-box" name="requiredSkills" required class="long-box-style"></textarea>
+
+              <label for="education-box">Education:</label>
+              <textarea id="education-box" name="requiredSkills" required class="long-box-style"></textarea>
+
+              <label for="job-location" >Location:</label>
+              <input type="text" id="job-location" name="jobLocation" required class=box-style ><p></p>
+              
+              <label for="job-location" >References:</label>
+              <input type="text" id="job-location" name="jobLocation" required class=box-style ><p></p>
+              
+      
+              <button style="box-shadow: 2px 2px 5px gray; cursor: pointer; padding: 15px; justify-content: center;">Apply now</button>
+            </form>
+          </div>
     </body>
 </html>
