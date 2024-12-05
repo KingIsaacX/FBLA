@@ -30,6 +30,7 @@
             jobGroupDiv.style.border = "1px solid black";
 
             jobArray.forEach((job) => {
+                //stores the values inside the variable and displays it in 'jobGroupDiv'
                 const jobDetails = `
                     <p><strong>Company:</strong> ${job.companyName}</p>
                     <p><strong>Title:</strong> ${job.title}</p>
@@ -40,9 +41,10 @@
                     <p><strong>Type:</strong> ${job.type}</p>
                     <hr>
                 `;
-                
-
                 jobGroupDiv.innerHTML += jobDetails;
+
+                //creates an accept button which removes the current jobPost from the 'allArrays' list and stores it in 'acceptedArrs'
+                //in the localstorage
                 const accept = document.createElement('button');
                 accept.textContent='Accept';
                 accept.style.margin='5px';
@@ -57,9 +59,9 @@
                     localStorage.setItem('allArrays',JSON.stringify(allArrays));
                     jobGroupDiv.remove();
                 });
-
-
                 jobGroupDiv.appendChild(accept);
+
+                //creates an deny button whihc removes the current jobPost from the 'allArrays' list
                 const deny = document.createElement('button');
                 deny.textContent='Deny';
                 deny.style.margin='5px';
@@ -77,7 +79,7 @@
             });
             
             
-
+            //adds the div box into a container
             container.appendChild(jobGroupDiv);
         });
     </script>

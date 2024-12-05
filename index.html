@@ -27,7 +27,7 @@
           <a class="add-button" href = "CreatePosting.html">Create Job Posting</a>
           <a class="tempbutton" href = "BackendPanel.html">temp button</a>
       </div>
-
+      <!--  displays the job postings -->
         <div id="info-Container"></div>
   <script>
     const container = document.getElementById("info-Container");
@@ -40,6 +40,7 @@
             jobGroupDiv.style.border = "1px solid black";
 
             jobArray.forEach((job) => {
+              //stores all the values of the jobArray in a div
                 const jobDetails = `
                     <p><strong>Company:</strong> ${job.companyName}</p>
                     <p><strong>Title:</strong> ${job.title}</p>
@@ -50,8 +51,6 @@
                     <p><strong>Type:</strong> ${job.type}</p>
                     <hr>
                 `;
-                
-
                 jobGroupDiv.innerHTML += jobDetails;
                 
                 

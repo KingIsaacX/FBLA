@@ -49,12 +49,11 @@
       
 
     </div>
-    <p id="empty">soihohoihoihoiwef</p>
     <script>
-
         const jobDataList = [];
         document.getElementById("submit-button").addEventListener("click", function(event) {
             event.preventDefault();
+            //stores values from fields into jobDataList in 'fieldtype:value' format
             jobDataList.push({companyName: document.getElementById('job-company').value,
             title: document.getElementById('job-title').value,
             description: document.getElementById('job-description').value,
@@ -63,20 +62,15 @@
             location: document.getElementById('job-location').value,
             type: document.getElementById('job-type').value});
 
+            //stores jobDataList into a list called 'existingArr' which is a temporary variable for the localstorage list
             const existingArr = JSON.parse(localStorage.getItem("allArrays")) || [];
             existingArr.push(jobDataList);
             localStorage.setItem("allArrays",JSON.stringify(existingArr));
 
-            document.getElementById('empty').innerHTML = localStorage.getItem('allArrays');
+            //pushes the user back to homescreen after hitting submit
             window.location.href = 'index.html';
   
         });
-        function getJobDataById(id) {
-            return jobDataList.find(job => job.id == id);
-        }
-
-        
-
     </script>
   </body>
 </html>
