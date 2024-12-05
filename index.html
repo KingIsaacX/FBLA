@@ -11,8 +11,16 @@
       <a href="index.html"><div class="logo">Home</div></a>
           <ul class="nav-links">
               <li><a href="">Check applicants</a></li>
-              <li><a href="">Register</a></li>
-              <li><a href="login.html">Log in</a></li> 
+            <div> <!-- only display when NOT logged in -->
+              <li><a href="register.html">Register</a></li>
+              <li><a href="login.html">Log in</a></li>
+            </div>
+               
+            <div> <!-- only display when logged in --> 
+              <li><a href="inbox.html">Inbox</a></li> 
+              <li><a href="login.html">Log Out</a></li> <!-- should be a button -->
+
+            </div>
           </ul>
       </div>
         <div class="button-container">
