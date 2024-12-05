@@ -25,10 +25,53 @@
       </div>
         <div class="button-container">
           <a class="add-button" href = "CreatePosting.html">Create Job Posting</a>
-        <div class="button-container">
-            <a class="tempbutton" href = "BackendPanel.html">temp button</a>
-        </div>
+          <a class="tempbutton" href = "BackendPanel.html">temp button</a>
+      </div>
+
+        <div id="info-Container"></div>
   <script>
+    const container = document.getElementById("info-Container");
+    
+    const acceptArrs = JSON.parse(localStorage.getItem('acceptedArrs')) || [];
+    acceptArrs.forEach((jobArray, index) => {
+            const jobGroupDiv = document.createElement('div');
+            jobGroupDiv.style.margin = "10px";
+            jobGroupDiv.style.padding = "10px";
+            jobGroupDiv.style.border = "1px solid black";
+
+            jobArray.forEach((job) => {
+                const jobDetails = `
+                    <p><strong>Company:</strong> ${job.companyName}</p>
+                    <p><strong>Title:</strong> ${job.title}</p>
+                    <p><strong>Description:</strong> ${job.description}</p>
+                    <p><strong>Skills:</strong> ${job.skills}</p>
+                    <p><strong>Salary:</strong> ${job.salary}</p>
+                    <p><strong>Location:</strong> ${job.location}</p>
+                    <p><strong>Type:</strong> ${job.type}</p>
+                    <hr>
+                `;
+                
+
+                jobGroupDiv.innerHTML += jobDetails;
+                
+                
+                const apply = document.createElement('button');
+                apply.textContent='Apply';
+                apply.style.margin='5px';
+                apply.style.padding='10px';
+                apply.style.backgroundColor='white';
+                apply.style.color='black';
+                apply.style.width='100px';
+                jobGroupDiv.appendChild(apply);
+                apply.addEventListener('click',function(){
+                  window.location.href = 'ApplicationPanel.html'
+                });
+            });
+            
+            
+
+            container.appendChild(jobGroupDiv);
+        });
   </script>
   </body>
 
