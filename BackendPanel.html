@@ -4,7 +4,7 @@
         <meta charset="UTF-8">
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
         <title>Backend</title>
-        <link rel="stylesheet" href="styles.css">
+        <link rel="stylesheet" href="./assets/styles.css">
     </head>
 <body>
     <div class="top-bar">
@@ -29,6 +29,7 @@
             jobGroupDiv.style.border = "1px solid black";
 
             jobArray.forEach((job) => {
+                const jobDetailsDiv = document.createElement('div');
                 const jobDetails = `
                     <p><strong>Company:</strong> ${job.companyName}</p>
                     <p><strong>Title:</strong> ${job.title}</p>
@@ -39,22 +40,17 @@
                     <p><strong>Type:</strong> ${job.type}</p>
                     <hr>
                 `;
-                const acceptButton = document.createElement('button');
-                acceptButton.textContent='Accept';
-                acceptButton.classList.add('accept-button');
+                
 
-                const denyButton = document.createElement('button');
-                denyButton.textContent='Deny';
-                denyButton.classList.add('deny-button');
-
+                jobGroupDiv.innerHTML += jobDetails;
+                const accept = document.createElement('button');
+                jobGroupDiv.add
+                
                 
             });
-            jobGroupDiv.innerHTML = jobDetails;
-            jobDetails.appendChild(acceptButton);
-            jobDetails.appendChild(denyButton);
-
-            jobGroupDiv.appendChild(jobDetails);
             
+            
+
             container.appendChild(jobGroupDiv);
         });
     </script>
