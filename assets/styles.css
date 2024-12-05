@@ -131,3 +131,9 @@ body {
     text-decoration: none;
     font-size: 15px;
   }
+
+
+.input-boxes:focus {
+    border-color: #007BFF;
+    outline: none;
+}
