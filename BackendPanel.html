@@ -21,7 +21,8 @@
         const container = document.getElementById("info-Container");
 
         const allArrays = JSON.parse(localStorage.getItem('allArrays')) || [];
-
+        const acceptedArrs = JSON.parse(localStorage.getItem('acceptedArrs')) || [];
+        
         allArrays.forEach((jobArray, index) => {
             const jobGroupDiv = document.createElement('div');
             jobGroupDiv.style.margin = "10px";
@@ -29,7 +30,6 @@
             jobGroupDiv.style.border = "1px solid black";
 
             jobArray.forEach((job) => {
-                const jobDetailsDiv = document.createElement('div');
                 const jobDetails = `
                     <p><strong>Company:</strong> ${job.companyName}</p>
                     <p><strong>Title:</strong> ${job.title}</p>
@@ -44,8 +44,35 @@
 
                 jobGroupDiv.innerHTML += jobDetails;
                 const accept = document.createElement('button');
-                jobGroupDiv.add
-                
+                accept.textContent='Accept';
+                accept.style.margin='5px';
+                accept.style.padding='10px';
+                accept.style.backgroundColor='green';
+                accept.style.color='white';
+                accept.style.width='100px';
+                accept.addEventListener('click',function(){
+                    acceptedArrs.push(jobArray);
+                    localStorage.setItem('acceptedArrs',JSON.stringify(acceptedArrs));
+                    allArrays.splice(index,1);
+                    localStorage.setItem('allArrays',JSON.stringify(allArrays));
+                    jobGroupDiv.remove();
+                });
+
+
+                jobGroupDiv.appendChild(accept);
+                const deny = document.createElement('button');
+                deny.textContent='Deny';
+                deny.style.margin='5px';
+                deny.style.padding='10px';
+                deny.style.backgroundColor='red';
+                deny.style.color='white';
+                deny.style.width='100px';
+                jobGroupDiv.appendChild(deny);
+                deny.addEventListener('click',function(){
+                    allArrays.splice(index,1);
+                    localStorage.setItem('allArrays',JSON.stringify(allArrays));
+                    jobGroupDiv.remove();
+                });
                 
             });
             
