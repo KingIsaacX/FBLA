@@ -10,9 +10,9 @@
     <div class="top-bar">
         <a href="index.html"><div class="logo">Home</div></a>
             <ul class="nav-links">
-                <li><a href="">Postings</a></li>
-                <li><a href="register.html">Register</a></li>
-                <li><a href="login.html">Log in</a></li>
+                <a href="">Postings</a>
+                <a href="register.html">Register</a>
+                <a href="login.html">Log in</a>
             </ul>
     </div>
 
@@ -21,22 +21,22 @@
       <h2>Create a Job Posting</h2>
       <form id="job-posting-form">
         <label for="job-company" >Company Name:</label>
-        <input type="text" id="job-company" name="jobCompany" required style="width: 50%; padding: 10px; margin: 25px; align-items: center; justify-content: center; display: flex;box-shadow: 2px 2px 5px gray;"><p></p>
+        <input type="text" id="job-company" name="jobCompany" required ><p></p>
 
         <label for="job-title" >Job Title:</label>
-        <input type="text" id="job-title" name="jobTitle" required style="width: 50%; padding: 10px; margin: 25px; align-items: center; justify-content: center; display: flex;box-shadow: 2px 2px 5px gray;"><p></p>
+        <input type="text" id="job-title" name="jobTitle" required ><p></p>
         
         <label for="job-description" >Job Description:</label>
-        <input type="text" id = "job-description"name="jobDescription" required style="width: 50%; padding: 10px; margin: 25px; align-items: center; justify-content: center; display: flex;box-shadow: 2px 2px 5px gray;"></input><p></p>
+        <input type="text" id = "job-description"name="jobDescription" required></input><p></p>
         
         <label for="required-skills">Required Skills:</label>
-        <input type="text" id="required-skills" name="requiredSkills" placeholder="e.g., JavaScript, teamwork" required style="width: 50%; padding: 10px; margin: 25px; align-items: center; justify-content: center; display: flex;box-shadow: 2px 2px 5px gray;"><p></p>
+        <input type="text" id="required-skills" name="requiredSkills" placeholder="e.g., JavaScript, teamwork" required><p></p>
         
         <label for="salary-range">Salary Range:</label>
-        <input type="text" id="salary-range" name="salaryRange" placeholder="e.g., $50,000 - $60,000" required  style="width: 50%; padding: 10px; margin: 25px; align-items: center; justify-content: center; display: flex;box-shadow: 2px 2px 5px gray;"><p></p>
+        <input type="text" id="salary-range" name="salaryRange" placeholder="e.g., $50,000 - $60,000" required><p></p>
         
         <label for="job-location" >Location:</label>
-        <input type="text" id="job-location" name="jobLocation" required style="width: 50%; padding: 10px; margin: 25px; align-items: center; justify-content: center; display: flex;box-shadow: 2px 2px 5px gray;" ><p></p>
+        <input type="text" id="job-location" name="jobLocation" required><p></p>
         
         <label for="job-type" >Job Type:</label>
         <select id="job-type" name="jobType" required style="width: 50%; padding: 10px; margin: 25px; align-items: center; justify-content: center; display: flex; box-shadow: 2px 2px 5px gray;">
@@ -63,9 +63,9 @@
             type: document.getElementById('job-type').value});
 
             //stores jobDataList into a list called 'existingArr' which is a temporary variable for the localstorage list
-            const existingArr = JSON.parse(localStorage.getItem("allArrays")) || [];
+            const existingArr = JSON.parse(localStorage.getItem("acceptedArrs")) || [];
             existingArr.push(jobDataList);
-            localStorage.setItem("allArrays",JSON.stringify(existingArr));
+            localStorage.setItem("acceptedArrs",JSON.stringify(existingArr));
 
             //pushes the user back to homescreen after hitting submit
             window.location.href = 'index.html';
