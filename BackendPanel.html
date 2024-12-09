@@ -4,84 +4,41 @@
         <meta charset="UTF-8">
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
         <title>Backend</title>
-        <link rel="stylesheet" href="./assets/styles.css">
+        <link rel="stylesheet" href="styles.css">
     </head>
 <body>
-    <div class="top-bar">
-        <a href="index.html"><div class="logo">MyWebsite</div></a>
-            <ul class="nav-links">
-                <li><a href="">Postings</a></li>
-                <li><a href="">Register</a></li>
-                <li><a href="login.html">Log in</a></li> 
-            </ul>
-        </div>
+        <div class="top-bar">
+            <a href="index.html"><div class="logo">MyWebsite</div></a>
+                <ul class="nav-links">
+                    <li><a href="">View applications</a></li>
+                    <li><a href="">Register</a></li>
+                    <li><a href="login.html">Log in</a></li> 
+                </ul>
+            </div>
     <div id="info-Container"></div>
-    
+            <p>allArrays[1]</p>
     <script>
+        const allArrays = [];
+        const oldVal = sessionStorage.event.oldVal;
         const container = document.getElementById("info-Container");
+        window.addEventListener('storage',(event)=> {
+                allArrays.push(event.newValue);
+                sessionStorage.clear;
+                console.log('data stored and storage cleared');
+                const element = document.createElement('p');
 
-        const allArrays = JSON.parse(localStorage.getItem('allArrays')) || [];
-        const acceptedArrs = JSON.parse(localStorage.getItem('acceptedArrs')) || [];
-        
-        allArrays.forEach((jobArray, index) => {
-            const jobGroupDiv = document.createElement('div');
-            jobGroupDiv.style.margin = "10px";
-            jobGroupDiv.style.padding = "10px";
-            jobGroupDiv.style.border = "1px solid black";
+                paragraph.textContent = 'skibdi';
 
-            jobArray.forEach((job) => {
-                //stores the values inside the variable and displays it in 'jobGroupDiv'
-                const jobDetails = `
-                    <p><strong>Company:</strong> ${job.companyName}</p>
-                    <p><strong>Title:</strong> ${job.title}</p>
-                    <p><strong>Description:</strong> ${job.description}</p>
-                    <p><strong>Skills:</strong> ${job.skills}</p>
-                    <p><strong>Salary:</strong> ${job.salary}</p>
-                    <p><strong>Location:</strong> ${job.location}</p>
-                    <p><strong>Type:</strong> ${job.type}</p>
-                    <hr>
-                `;
-                jobGroupDiv.innerHTML += jobDetails;
+                container.appendChild(paragraph);
+        })
+        for(let i = 0; i<allArrays.length; i++)
+        {
+            const element = document.createElement('p');
 
-                //creates an accept button which removes the current jobPost from the 'allArrays' list and stores it in 'acceptedArrs'
-                //in the localstorage
-                const accept = document.createElement('button');
-                accept.textContent='Accept';
-                accept.style.margin='5px';
-                accept.style.padding='10px';
-                accept.style.backgroundColor='green';
-                accept.style.color='white';
-                accept.style.width='100px';
-                accept.addEventListener('click',function(){
-                    acceptedArrs.push(jobArray);
-                    localStorage.setItem('acceptedArrs',JSON.stringify(acceptedArrs));
-                    allArrays.splice(index,1);
-                    localStorage.setItem('allArrays',JSON.stringify(allArrays));
-                    jobGroupDiv.remove();
-                });
-                jobGroupDiv.appendChild(accept);
+            paragraph.textContent = allArrays[i];
 
-                //creates an deny button whihc removes the current jobPost from the 'allArrays' list
-                const deny = document.createElement('button');
-                deny.textContent='Deny';
-                deny.style.margin='5px';
-                deny.style.padding='10px';
-                deny.style.backgroundColor='red';
-                deny.style.color='white';
-                deny.style.width='100px';
-                jobGroupDiv.appendChild(deny);
-                deny.addEventListener('click',function(){
-                    allArrays.splice(index,1);
-                    localStorage.setItem('allArrays',JSON.stringify(allArrays));
-                    jobGroupDiv.remove();
-                });
-                
-            });
-            
-            
-            //adds the div box into a container
-            container.appendChild(jobGroupDiv);
-        });
+            container.appendChild(paragraph);
+        }
     </script>
 </body>
 </html>

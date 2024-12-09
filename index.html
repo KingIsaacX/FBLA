@@ -10,26 +10,37 @@
     <div class="top-bar">
       <a href="index.html"><div class="logo">Home</div></a>
           <ul class="nav-links">
-              <li><a href="">Check applicants</a></li>
+              
             <div> <!-- only display when NOT logged in -->
-              <li><a href="register.html">Register</a></li>
-              <li><a href="login.html">Log in</a></li>
+              <a href="register.html"style="margin: 15px;">Register</a>
+              <a href="login.html"style="margin: 15px;">Log in</a>
             </div>
                
-            <div> <!-- only display when logged in --> 
-              <li><a href="inbox.html">Inbox</a></li> 
-              <li><a href="login.html">Log Out</a></li> <!-- should be a button -->
-
-            </div>
+            
           </ul>
       </div>
-        <div class="button-container">
-          <a class="add-button" href = "CreatePosting.html">Create Job Posting</a>
-          <a class="tempbutton" href = "BackendPanel.html">temp button</a>
-      </div>
+        <div id='button-container' class="button-container">
+       <!-- <a class="add-button" href = "CreatePosting.html">Create Job Posting</a> -->
+        </div>
       <!--  displays the job postings -->
         <div id="info-Container"></div>
   <script>
+    let isLoggedin = JSON.parse(sessionStorage.getItem('isLoggedin')) === true || false;
+    
+    const buttonContainer = document.getElementById('button-container');
+  
+    if (isLoggedin)
+    {
+      const createPost = document.createElement('button');
+      createPost.className = 'add-button';
+      createPost.textContent = 'Create Posting';
+      createPost.addEventListener('click',function(){
+        window.location.href = 'CreatePosting.html';
+      });
+    buttonContainer.appendChild(createPost);
+    }
+    
+    
     const container = document.getElementById("info-Container");
     
     const acceptArrs = JSON.parse(localStorage.getItem('acceptedArrs')) || [];
@@ -55,23 +66,16 @@
                 
                 
                 const apply = document.createElement('button');
-                apply.textContent='Apply';
-                apply.style.margin='5px';
-                apply.style.padding='10px';
-                apply.style.backgroundColor='white';
-                apply.style.color='black';
-                apply.style.width='100px';
+                apply.className = 'apply-button';
+                apply.textContent = 'Apply';
                 jobGroupDiv.appendChild(apply);
                 apply.addEventListener('click',function(){
                   window.location.href = 'ApplicationPanel.html'
                 });
             });
-            
-            
 
             container.appendChild(jobGroupDiv);
         });
   </script>
   </body>
-
 </html>

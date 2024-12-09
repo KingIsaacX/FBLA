@@ -11,9 +11,9 @@
       <div class="top-bar">
         <a href="index.html"><div class="logo">Home</div></a>
             <ul class="nav-links">
-                <li><a href="">Postings</a></li>
-                <li><a href="">Register</a></li>
-                <li><a href="login.html">Log in</a></li>
+                <a href="">Postings</a>
+                <a href="">Register</a>
+                <a href="login.html">Log in</a>
             </ul>
       </div>
 
@@ -22,18 +22,18 @@
             <h2>Apply to a posting</h2>
             <form id="job-application-form">
               <label for="first-name" >First Name:</label>
-              <input type="text" id="first-name" name="firstName" required style="width: 50%; padding: 10px; margin: 25px; align-items: center; justify-content: center; display: flex;box-shadow: 2px 2px 5px gray;"><p></p>
+              <input type="text" id="first-name" name="firstName" required style="width: 50%; padding: 10px; margin: 25px; align-items: center; justify-content: center; display: flex;box-shadow: 2px 2px 5px gray;"><br>
       
               <label for="last-name" >Last Name:</label>
-              <input type="text" id="first-name" name="firstName" required class=box-style><p></p>
+              <input type="text" id="first-name" name="firstName" required class=box-style><br>
       
 
 
-              <label for="job-title" >Phone Number:</label>
-              <input type="text" id="job-title" name="jobTitle" required class=box-style><p></p>
+              <label for="phonenum" >Phone Number:</label>
+              <input type="text" id="job-title" name="jobTitle" required class=box-style><br>
               
-              <label for="job-title" >Email:</label>
-              <input type="text" id="job-title" name="jobTitle" required class=box-style><p></p>
+              <label for="email" >Email:</label>
+              <input type="text" id="job-title" name="jobTitle" required class=box-style><br>
               
 
 
@@ -41,18 +41,29 @@
               <label for="education-box">Education:</label>
               <textarea id="education-box" name="requiredSkills" required class="long-box-style"></textarea>
 
-              <label for="education-box">Experience:</label>
-              <textarea id="education-box" name="requiredSkills" required class="long-box-style"></textarea>
-
-              <label for="job-location" >Location:</label>
-              <input type="text" id="job-location" name="jobLocation" required class=box-style ><p></p>
               
-              <label for="job-location" >References:</label>
-              <input type="text" id="job-location" name="jobLocation" required class=box-style ><p></p>
+              <label for="job-reference" >References:</label>
+              <input type="text" id="job-location" name="jobLocation" required class=box-style><br>
+
+              <label for="street">Street:</label>
+              <input type="text" id = "street" name="street" required class="box-style">
               
       
-              <button style="box-shadow: 2px 2px 5px gray; cursor: pointer; padding: 15px; justify-content: center;">Apply now</button>
+              <button id = 'apply-button' style="box-shadow: 2px 2px 5px gray; cursor: pointer; padding: 15px; justify-content: center;">Apply now</button>
             </form>
           </div>
+
+          <script>
+            document.getElementById('apply-button').addEventListener('click',function(event){
+              appDataList.push({
+                name: document.getElementById('first-name').value + " " + document.getElementById('last-name'),
+                cell: document.getElementById('phonenum').value,
+                email: document.getElementById('email').value,
+                education: document.getElementById('salary-range').value,
+                e: document.getElementById('job-location').value,
+                type: document.getElementById('job-type').value});
+
+            });
+          </script>
     </body>
 </html>
