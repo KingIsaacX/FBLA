@@ -60,10 +60,11 @@
             skills: document.getElementById('required-skills').value,
             salary: document.getElementById('salary-range').value,
             location: document.getElementById('job-location').value,
-            type: document.getElementById('job-type').value});
+            type: document.getElementById('job-type').value,
+            author: sessionStorage.getItem('currAccount').username});
 
             //stores jobDataList into a list called 'existingArr' which is a temporary variable for the localstorage list
-            const existingArr = JSON.parse(localStorage.getItem("acceptedArrs")) || [];
+            const existingArr = JSON.parse(localStorage.getItem("allArrays")) || [];
             existingArr.push(jobDataList);
             localStorage.setItem("acceptedArrs",JSON.stringify(existingArr));
 

@@ -25,6 +25,7 @@
       <!--  displays the job postings -->
         <div id="info-Container"></div>
   <script>
+    localStorage.clear();
     let isLoggedin = JSON.parse(sessionStorage.getItem('isLoggedin')) === true || false;
     
     const buttonContainer = document.getElementById('button-container');
@@ -60,6 +61,7 @@
                     <p><strong>Salary:</strong> ${job.salary}</p>
                     <p><strong>Location:</strong> ${job.location}</p>
                     <p><strong>Type:</strong> ${job.type}</p>
+                    <p><strong>Author:</strong> ${job.author}</p>
                     <hr>
                 `;
                 jobGroupDiv.innerHTML += jobDetails;
@@ -70,7 +72,8 @@
                 apply.textContent = 'Apply';
                 jobGroupDiv.appendChild(apply);
                 apply.addEventListener('click',function(){
-                  window.location.href = 'ApplicationPanel.html'
+                  window.location.href = 'ApplicationPanel.html';
+                  sessionStorage.setItem('currentPost',jobDetails);
                 });
             });
 
