@@ -1,3 +1,5 @@
+import java.util.Queue;
+
 public class posting {
     private String companyName;
     private String jobTitle;
@@ -7,7 +9,7 @@ public class posting {
     private String skills;
     private int startingSalary;
     private String location;
-    private 
+    private Queue<application> applicants;
 
     public posting(String companyName, String jobTitle, String jobDescription, String skills, int startingSalary, String location){
         
