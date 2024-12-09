@@ -26,4 +26,8 @@ public class posting {
         applicants.add(data);
     }
 
+    public application getApplicant(){
+        return applicants.poll();
+    }
+
 }
