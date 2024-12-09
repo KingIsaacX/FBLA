@@ -7,12 +7,23 @@ public class posting {
     private String jobDescription;
 
     private String skills;
-    private int startingSalary;
+    private String startingSalary;
     private String location;
     private Queue<application> applicants;
 
-    public posting(String companyName, String jobTitle, String jobDescription, String skills, int startingSalary, String location){
+    public posting(String companyName, String jobTitle, String jobDescription, String skills, String startingSalary, String location){
         
+        this.companyName = companyName;
+        this.jobTitle = jobTitle;
+        this.jobDescription = jobDescription;
+        this.skills = skills;
+        this.startingSalary = startingSalary;
+        this.location = location;
+
+    }
+
+    public void addApplication(application data){
+        applicants.add(data);
     }
 
 }
