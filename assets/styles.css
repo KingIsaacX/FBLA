@@ -2,7 +2,8 @@
 body {
     margin: 0;
     font-family: Arial, sans-serif;
-    background-color: #a3c1ad; /* Background color for the body */
+    background-color: #d3d8e7;
+    ; /* Background color for the body */
   }
   
   .top-bar {
@@ -10,14 +11,14 @@ body {
     justify-content: space-between;
     align-items: center;
     padding: 10px 20px;
-    background-color: #317873; /* Background color for the top bar */
-    color: #f4f4f4; /* Light color for text */
+    background-color: #27408b; /* Background color for the top bar */
+    color: #d3d8e7; /* Light color for text */
   }
   
   .logo {
     font-size: 24px;
     font-weight: bold;
-    color: #a0d6b4; /* Color for the logo text */
+    color: #d3d8e7; /* Color for the logo text */
   }
   
   .nav-links {
@@ -37,11 +38,11 @@ body {
   }
   
   .nav-links a:hover {
-    color: #5f9ea0; /* Color when hovering over the links */
+    color: #939fc5; /* Color when hovering over the links */
     text-decoration: underline;
   }
 
-  .add-button { background-color: #49796b;
+  .add-button { background-color: #27408b;
     color: white; 
     border: none; 
     padding: 10px 15px; 
@@ -161,3 +162,15 @@ body {
   color:black;
   width:100px;
 }
+
+/* #27408b blueish
+#3c5396
+#5266a2
+#6779ad
+#7d8cb9
+#939fc5
+#a8b2d0
+#bec5dc
+#d3d8e7
+#e9ebf3
+#ffffff white*/ 
