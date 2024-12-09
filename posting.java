@@ -10,7 +10,7 @@ public class posting {
     private String startingSalary;
     private String location;
     private Queue<application> applicants;
-
+    //this is the object for our postings
     public posting(String companyName, String jobTitle, String jobDescription, String skills, String startingSalary, String location){
         
         this.companyName = companyName;
