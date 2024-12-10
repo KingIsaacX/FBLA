@@ -1,91 +1,67 @@
 package org.gvfbla;
 
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
+import java.security.SecureRandom;
+import java.util.Base64;
 import java.util.UUID;
 
-/**
- * Represents a user account with a username, password, and account type.
- * Each account is assigned a unique ID upon creation.
- */
-public class account {
+public abstract class account {
+    private String id;
     private String username;
-    private String password;
-    private String accountType;
-    private final String id;
+    private String passwordHash;
+    private String salt;
+    private String email;
+    private String role;
+    private boolean isActive;
+    private String lastLoginDate;
 
-    /**
-     * Creates a new account with the specified username, password, and account type.
-     *
-     * @param username    the account's username
-     * @param password    the account's password
-     * @param accountType the type of the account (e.g., "admin", "user")
-     */
-    public account(String username, String password, String accountType) {
-        this.username = username;
-        this.password = password;
-        this.accountType = accountType;
+    protected account(String username, String password, String email, String role) {
         this.id = UUID.randomUUID().toString();
-    }
-
-    /**
-     * Returns the unique ID of this account.
-     *
-     * @return the account's unique ID
-     */
-    public String getId() {
-        return id;
-    }
-
-    /**
-     * Returns the username of this account.
-     *
-     * @return the account's username
-     */
-    public String getUsername() {
-        return username;
-    }
-
-    /**
-     * Sets the username of this account.
-     *
-     * @param username the account's new username
-     */
-    public void setUsername(String username) {
         this.username = username;
+        this.salt = generateSalt();
+        this.passwordHash = hashPassword(password, this.salt);
+        this.email = email;
+        this.role = role;
+        this.isActive = true;
     }
 
-    /**
-     * Returns the password of this account.
-     *
-     * @return the account's password
-     */
-    public String getPassword() {
-        return password;
+    // Password encryption methods
+    private String generateSalt() {
+        SecureRandom random = new SecureRandom();
+        byte[] salt = new byte[16];
+        random.nextBytes(salt);
+        return Base64.getEncoder().encodeToString(salt);
     }
 
-    /**
-     * Sets the password of this account.
-     *
-     * @param password the account's new password
-     */
-    public void setPassword(String password) {
-        this.password = password;
+    private String hashPassword(String password, String salt) {
+        try {
+            MessageDigest md = MessageDigest.getInstance("SHA-256");
+            md.update(Base64.getDecoder().decode(salt));
+            byte[] hashedPassword = md.digest(password.getBytes());
+            return Base64.getEncoder().encodeToString(hashedPassword);
+        } catch (NoSuchAlgorithmException e) {
+            throw new RuntimeException("Error hashing password", e);
+        }
     }
 
-    /**
-     * Returns the type of this account.
-     *
-     * @return the account type
-     */
-    public String getAccountType() {
-        return accountType;
+    public boolean verifyPassword(String password) {
+        String hashedAttempt = hashPassword(password, this.salt);
+        return hashedAttempt.equals(this.passwordHash);
     }
 
-    /**
-     * Sets the type of this account.
-     *
-     * @param accountType the account's new type
-     */
-    public void setAccountType(String accountType) {
-        this.accountType = accountType;
-    }
+    // Common getters and setters
+    public String getId() { return id; }
+    public String getUsername() { return username; }
+    public String getEmail() { return email; }
+    public void setEmail(String email) { this.email = email; }
+    public String getRole() { return role; }
+    public boolean isActive() { return isActive; }
+    public void setActive(boolean active) { isActive = active; }
+    public String getLastLoginDate() { return lastLoginDate; }
+    public void setLastLoginDate(String lastLoginDate) { this.lastLoginDate = lastLoginDate; }
+
+    // Abstract methods that must be implemented by child classes
+    public abstract boolean hasPermission(String action);
+    public abstract String getAccountType();
 }
