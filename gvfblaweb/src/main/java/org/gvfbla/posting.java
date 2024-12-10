@@ -1,5 +1,6 @@
 package org.gvfbla;
 
+import java.time.LocalDateTime;
 import java.util.Queue;
 import java.util.UUID;
 
@@ -12,10 +13,14 @@ public class posting {
     private String jobTitle;
     private String jobDescription;
     private String skills;
+    private LocalDateTime approvalDate;
+    private String approvedBy;
+    private String rejectionReason;
     private String startingSalary;
     private String location;
     private final String id;
     private Queue<application> applicants;
+    private String status;
 
     /**
      * Creates a new posting with the given details and generates a unique ID for it.
@@ -36,6 +41,7 @@ public class posting {
         this.startingSalary = startingSalary;
         this.location = location;
         this.id = UUID.randomUUID().toString();
+        this.status = "PENDING";
     }
 
     /**
@@ -172,4 +178,71 @@ public class posting {
     public void setLocation(String location) {
         this.location = location;
     }
+    /**
+     * Gets the status of the job.
+     *
+     * @return the job status
+     */
+    public String getStatus() {
+        return status;
+    }
+
+    /**
+     * Sets the status of the job.
+     *
+     * @param newStatus the new status
+     */
+    public void setStatus(String newStatus) {
+        status = newStatus;
+    }
+
+        public void setApprovalDate(LocalDateTime approvalDate) {
+        this.approvalDate = approvalDate;
+    }
+
+    /**
+     * Returns the date when the application was approved.
+     *
+     * @return the approval date as a LocalDateTime
+     */
+    public LocalDateTime getApprovalDate() {
+        return approvalDate;
+    }
+
+    /**
+     * Sets the username or identifier of the approver.
+     *
+     * @param approvedBy the identifier of the approver
+     */
+    public void setApprovedBy(String approvedBy) {
+        this.approvedBy = approvedBy;
+    }
+
+    /**
+     * Returns the identifier of the user who approved the application.
+     *
+     * @return the approvedBy identifier
+     */
+    public String getApprovedBy() {
+        return approvedBy;
+    }
+
+    /**
+     * Sets the reason for rejecting the application.
+     *
+     * @param reason the reason for rejection
+     */
+    public void setRejectionReason(String reason) {
+        this.rejectionReason = reason;
+    }
+
+    /**
+     * Returns the reason why the application was rejected.
+     *
+     * @return the rejection reason
+     */
+    public String getRejectionReason() {
+        return rejectionReason;
+    }
+
 }
