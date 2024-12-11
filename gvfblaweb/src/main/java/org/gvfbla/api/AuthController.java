@@ -5,6 +5,7 @@ import java.util.Base64;
 import java.util.Map;
 
 import org.gvfbla.AccountManager;
+import org.gvfbla.AdminAccount;
 import org.gvfbla.EmployerAccount;
 import org.gvfbla.StudentAccount;
 import org.gvfbla.account;
@@ -156,7 +157,7 @@ public class AuthController extends BaseApiController {
 
     private void handleLogout(HttpServletRequest request, HttpServletResponse response) 
             throws IOException {
-        // For simplicity, since tokens are stateless, instruct frontend to delete the token
+        // Stateless tokens - instruct frontend to delete the token.
         sendJsonResponse(response, Map.of("message", "Logged out successfully"));
     }
 
@@ -175,13 +176,12 @@ public class AuthController extends BaseApiController {
             return;
         }
 
-        // Prepare user data to send (excluding sensitive information)
         Map<String, String> userData = Map.of(
             "id", user.getId(),
             "username", user.getUsername(),
             "role", user.getRole(),
             "email", user.getEmail(),
-            "lastLoginDate", user.getLastLoginDate()
+            "lastLoginDate", user.getLastLoginDate() != null ? user.getLastLoginDate() : ""
         );
 
         sendJsonResponse(response, userData);
@@ -198,9 +198,7 @@ public class AuthController extends BaseApiController {
             }
             String userId = parts[0];
             String role = parts[1];
-            // Optional: Validate timestamp for token expiration
 
-            // Retrieve the user by ID
             account user = accountManager.findAccountById(userId);
             if (user == null || !user.getRole().equals(role)) {
                 return null;

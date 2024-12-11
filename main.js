@@ -9,8 +9,7 @@ const API_ENDPOINTS = {
       STUDENT: `${BASE_URL}/api/auth/register/student`,
       EMPLOYER: `${BASE_URL}/api/auth/register/employer`
     },
-    LOGOUT: `${BASE_URL}/api/auth/logout`,
-    ME: `${BASE_URL}/api/auth/me`
+    LOGOUT: `${BASE_URL}/api/auth/logout`
   },
   POSTINGS: `${BASE_URL}/api/postings`,
   APPLICATIONS: {
@@ -45,12 +44,14 @@ document.addEventListener('DOMContentLoaded', initializeApp);
 
 function initializeApp() {
   initializeHTML();
-  defineGlobalFunctions(); // Define all global functions before adding listeners
+  defineGlobalFunctions();
   initializeEventListeners();
+
+  // Restore session from local storage if available
+  restoreSessionFromLocalStorage();
+
   fetchInitialData();
-  checkAuthentication().then(() => {
-    loadUserDashboard();
-  });
+  loadUserDashboard(); // After restoring session, load dashboard
 }
 
 // Build HTML structure
@@ -283,7 +284,12 @@ function defineGlobalFunctions() {
         body: JSON.stringify({ username, password })
       });
 
+      console.log('Login response:', response); // Debugging line
+
+      // Store user and token in localStorage
       localStorage.setItem('authToken', response.token);
+      localStorage.setItem('currentUser', JSON.stringify(response.user));
+
       currentUser = response.user;
       showToast('Logged in successfully!', 'success');
       updateUIForAuthenticatedUser();
@@ -349,7 +355,17 @@ function defineGlobalFunctions() {
         body: JSON.stringify(registrationData)
       });
 
+      console.log('Registration response:', response); // Debugging line
+
+      // Store user and token in localStorage
       localStorage.setItem('authToken', response.token);
+      localStorage.setItem('currentUser', JSON.stringify({
+        id: response.id,
+        username: response.username,
+        role: response.role,
+        email: registrationData.email
+      }));
+
       currentUser = {
         id: response.id,
         username: response.username,
@@ -375,6 +391,7 @@ function defineGlobalFunctions() {
       await fetchWithErrorHandling(API_ENDPOINTS.AUTH.LOGOUT, { method: 'POST' });
       currentUser = null;
       localStorage.removeItem('authToken');
+      localStorage.removeItem('currentUser');
       showToast('Logged out successfully!', 'success');
       updateUIForAuthenticatedUser();
       const userDashboard = document.getElementById('userDashboard');
@@ -385,13 +402,9 @@ function defineGlobalFunctions() {
   };
 }
 
-// Event Listeners
 function initializeEventListeners() {
-  const searchInput = document.getElementById('searchInput');
-  searchInput.addEventListener('input', handleSearchInput);
-
-  const filterContainer = document.getElementById('filterContainer');
-  filterContainer.addEventListener('click', handleFilterClick);
+  document.getElementById('searchInput').addEventListener('input', handleSearchInput);
+  document.getElementById('filterContainer').addEventListener('click', handleFilterClick);
 
   const createListingBtn = document.getElementById('createListingBtn');
   const createJobModal = document.getElementById('createJobModal');
@@ -399,8 +412,7 @@ function initializeEventListeners() {
   createListingBtn.addEventListener('click', () => { createJobModal.style.display = 'flex'; });
   createJobCloseBtn.addEventListener('click', () => { createJobModal.style.display = 'none'; });
 
-  const createJobForm = document.getElementById('createJobForm');
-  createJobForm.addEventListener('submit', handleCreateJob);
+  document.getElementById('createJobForm').addEventListener('submit', handleCreateJob);
 
   const scrollTopBtn = document.getElementById('scrollTopBtn');
   window.addEventListener('scroll', handleScroll);
@@ -412,14 +424,16 @@ function initializeEventListeners() {
     }
   });
 
-  const jobListings = document.getElementById('jobListings');
-  jobListings.addEventListener('click', handleApplyClick);
+  document.getElementById('jobListings').addEventListener('click', handleApplyClick);
 
   const loginModal = document.getElementById('loginModal');
   const loginModalCloseBtn = loginModal.querySelector('.login-modal-close');
   const loginLink = document.getElementById('loginLink');
   loginLink.addEventListener('click', (e) => { e.preventDefault(); loginModal.style.display = 'flex'; });
-  loginModalCloseBtn.addEventListener('click', () => { loginModal.style.display = 'none'; document.getElementById('loginForm').reset(); });
+  loginModalCloseBtn.addEventListener('click', () => {
+    loginModal.style.display = 'none';
+    document.getElementById('loginForm').reset();
+  });
   document.getElementById('loginForm').addEventListener('submit', handleLogin);
   window.addEventListener('click', (e) => {
     if (e.target === loginModal) {
@@ -475,7 +489,37 @@ function initializeEventListeners() {
   });
 }
 
-// Fetch initial data: Stats and Postings
+// Restore session from localStorage
+function restoreSessionFromLocalStorage() {
+  const token = localStorage.getItem('authToken');
+  const storedUser = localStorage.getItem('currentUser');
+
+  if (token && storedUser) {
+    try {
+      currentUser = JSON.parse(storedUser);
+      console.log('Restored user:', currentUser); // Debugging line
+      updateUIForAuthenticatedUser();
+      showBasedOnRole();
+    } catch (error) {
+      console.error('Invalid user data in localStorage:', error);
+      // Clear invalid data
+      localStorage.removeItem('authToken');
+      localStorage.removeItem('currentUser');
+    }
+  } else {
+    currentUser = null;
+    updateUIForAuthenticatedUser();
+    showBasedOnRole();
+  }
+}
+
+function updateStatsDisplay() {
+  document.getElementById('activeJobsCount').textContent = stats.activeJobs;
+  document.getElementById('companiesCount').textContent = stats.companies;
+  document.getElementById('studentsPlacedCount').textContent = stats.studentsPlaced;
+  animateStats();
+}
+
 async function fetchInitialData() {
   try {
     const [statsData, jobsData] = await Promise.all([
@@ -493,173 +537,11 @@ async function fetchInitialData() {
   }
 }
 
-// Check Authentication
-async function checkAuthentication() {
-  const token = localStorage.getItem('authToken');
-  if (token) {
-    try {
-      const user = await fetchWithErrorHandling(API_ENDPOINTS.AUTH.ME, {
-        headers: { 'Authorization': `Bearer ${token}` }
-      });
-      currentUser = user;
-      showBasedOnRole();
-      updateUIForAuthenticatedUser();
-    } catch (error) {
-      console.error('Authentication failed:', error);
-      currentUser = null;
-      showBasedOnRole();
-      updateUIForAuthenticatedUser();
-    }
-  } else {
-    currentUser = null;
-    showBasedOnRole();
-    updateUIForAuthenticatedUser();
-  }
-}
-
-// Update UI based on authentication
-function updateUIForAuthenticatedUser() {
-  const loginLink = document.getElementById('loginLink');
-  const registerLink = document.getElementById('registerLink');
-  const logoutLink = document.getElementById('logoutLink');
-  const createListingBtn = document.getElementById('createListingBtn');
-  const backpanelLink = document.getElementById('backpanelLink');
-
-  if (currentUser) {
-    loginLink.style.display = 'none';
-    registerLink.style.display = 'none';
-    logoutLink.style.display = 'block';
-
-    if (currentUser.role === userRoles.EMPLOYER) {
-      createListingBtn.style.display = 'flex';
-    } else {
-      createListingBtn.style.display = 'none';
-    }
-
-    if (currentUser.role === userRoles.ADMIN) {
-      backpanelLink.style.display = 'block';
-    } else {
-      backpanelLink.style.display = 'none';
-    }
-
-  } else {
-    loginLink.style.display = 'block';
-    registerLink.style.display = 'block';
-    logoutLink.style.display = 'none';
-    createListingBtn.style.display = 'none';
-    backpanelLink.style.display = 'none';
-  }
-}
-
-function showBasedOnRole() {
-  const userRole = currentUser ? currentUser.role : null;
-
-  document.querySelectorAll('.student-only').forEach(el => {
-    el.style.display = userRole === userRoles.STUDENT ? 'block' : 'none';
-  });
-
-  document.querySelectorAll('.employer-only').forEach(el => {
-    el.style.display = userRole === userRoles.EMPLOYER ? 'block' : 'none';
-  });
-
-  document.querySelectorAll('.admin-only').forEach(el => {
-    el.style.display = userRole === userRoles.ADMIN ? 'block' : 'none';
-  });
-}
-
-// Load User Dashboard based on role
 function loadUserDashboard() {
   if (!currentUser) return;
-  // If you have dashboard elements, show/hide them here
+  // Implement role-based dashboard if needed
 }
 
-// Show Admin Panel (Approve/Reject Postings)
-async function showAdminPanel() {
-  const adminPanelModal = document.getElementById('adminPanelModal');
-  adminPanelModal.style.display = 'flex';
-
-  try {
-    const adminPendingContainer = document.getElementById('adminPendingPostings');
-    adminPendingContainer.innerHTML = '';
-
-    const pending = jobs.filter(j => j.status && j.status.toUpperCase() === 'PENDING');
-    if (pending.length === 0) {
-      adminPendingContainer.innerHTML = '<div>No pending postings</div>';
-    } else {
-      pending.forEach(post => {
-        const postDiv = document.createElement('div');
-        postDiv.className = 'admin-posting-card';
-        postDiv.innerHTML = `
-          <h4>${sanitizeHtml(post.jobTitle)} at ${sanitizeHtml(post.companyName)}</h4>
-          <p>${sanitizeHtml(post.jobDescription)}</p>
-          <button class="approve-posting-btn" data-id="${post.id}">Approve</button>
-          <button class="reject-posting-btn" data-id="${post.id}">Reject</button>
-        `;
-        adminPendingContainer.appendChild(postDiv);
-      });
-
-      adminPendingContainer.onclick = handleAdminAction;
-    }
-  } catch (error) {
-    console.error('Error loading admin panel:', error);
-    showToast('Error loading admin panel', 'error');
-  }
-}
-
-// Handle Admin Action
-async function handleAdminAction(e) {
-  if (e.target.classList.contains('approve-posting-btn')) {
-    const postingId = e.target.dataset.id;
-    await approvePosting(postingId);
-  } else if (e.target.classList.contains('reject-posting-btn')) {
-    const postingId = e.target.dataset.id;
-    const reason = prompt('Enter rejection reason:', 'Not suitable');
-    if (reason) {
-      await rejectPosting(postingId, reason);
-    }
-  }
-}
-
-// Approve Posting
-async function approvePosting(postingId) {
-  try {
-    await fetchWithErrorHandling(API_ENDPOINTS.ADMIN.APPROVE(postingId), {
-      method: 'POST',
-      headers: getAuthHeaders(),
-      body: JSON.stringify({ token: getCurrentToken(), postingId })
-    });
-    showToast('Posting approved!', 'success');
-    const job = jobs.find(j => j.id === postingId);
-    if (job) job.status = 'APPROVED';
-    showAdminPanel();
-    renderJobs(jobs);
-  } catch (error) {
-    console.error('Error approving posting:', error);
-  }
-}
-
-// Reject Posting
-async function rejectPosting(postingId, reason) {
-  try {
-    await fetchWithErrorHandling(API_ENDPOINTS.ADMIN.REJECT(postingId), {
-      method: 'POST',
-      headers: getAuthHeaders(),
-      body: JSON.stringify({ token: getCurrentToken(), postingId, reason })
-    });
-    showToast('Posting rejected!', 'success');
-    const job = jobs.find(j => j.id === postingId);
-    if (job) {
-      job.status = 'REJECTED';
-      job.rejectionReason = reason;
-    }
-    showAdminPanel();
-    renderJobs(jobs);
-  } catch (error) {
-    console.error('Error rejecting posting:', error);
-  }
-}
-
-// Handle search input
 function handleSearchInput(e) {
   const searchTerm = e.target.value.toLowerCase();
   const filteredJobs = jobs.filter(job =>
@@ -671,7 +553,6 @@ function handleSearchInput(e) {
   renderJobs(filteredJobs);
 }
 
-// Handle filter click
 function handleFilterClick(e) {
   if (e.target.classList.contains('filter-tag')) {
     document.querySelectorAll('.filter-tag').forEach(tag => tag.classList.remove('active'));
@@ -683,7 +564,6 @@ function handleFilterClick(e) {
   }
 }
 
-// Handle scroll
 function handleScroll() {
   const scrollTopBtn = document.getElementById('scrollTopBtn');
   if (window.scrollY > 300) {
@@ -695,12 +575,10 @@ function handleScroll() {
   }
 }
 
-// Scroll to top
 function scrollToTop() {
   window.scrollTo({ top: 0, behavior: 'smooth' });
 }
 
-// Handle apply click
 function handleApplyClick(e) {
   if (e.target.classList.contains('apply-btn')) {
     const jobId = e.target.dataset.jobId;
@@ -708,7 +586,6 @@ function handleApplyClick(e) {
   }
 }
 
-// Handle Job Application
 async function handleJobApplication(jobId) {
   if (!currentUser) {
     showToast('Please log in to apply for jobs', 'error');
@@ -736,7 +613,6 @@ async function handleJobApplication(jobId) {
     showLoadingSpinner();
 
     const applicationData = {
-      token: getCurrentToken(),
       postingId: jobId,
       firstName,
       lastName,
@@ -749,7 +625,10 @@ async function handleJobApplication(jobId) {
 
     const response = await fetch(API_ENDPOINTS.APPLICATIONS.BASE + "/submit", {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: {
+        'Content-Type': 'application/json',
+        ...getAuthHeaders()
+      },
       body: JSON.stringify(applicationData)
     });
 
@@ -767,61 +646,148 @@ async function handleJobApplication(jobId) {
   }
 }
 
-// Fetch with Error Handling
-async function fetchWithErrorHandling(url, options = {}) {
+async function showAdminPanel() {
+  const adminPanelModal = document.getElementById('adminPanelModal');
+  adminPanelModal.style.display = 'flex';
+
   try {
-    showLoadingSpinner();
-    const headers = { 'Content-Type': 'application/json', ...options.headers };
-    const response = await fetch(url, { ...options, headers });
-    if (!response.ok) {
-      const errorData = await response.json();
-      throw new Error(errorData.error || `HTTP error: ${response.status}`);
+    const adminPendingContainer = document.getElementById('adminPendingPostings');
+    adminPendingContainer.innerHTML = '';
+
+    // Fetch pending postings via API if endpoint exists
+    // Since the existing code filters from 'jobs', ensure 'jobs' have 'status' field
+    const pending = jobs.filter(j => j.status && j.status.toUpperCase() === 'PENDING');
+    if (pending.length === 0) {
+      adminPendingContainer.innerHTML = '<div>No pending postings</div>';
+    } else {
+      pending.forEach(post => {
+        const postDiv = document.createElement('div');
+        postDiv.className = 'admin-posting-card';
+        postDiv.innerHTML = `
+          <h4>${sanitizeHtml(post.jobTitle)} at ${sanitizeHtml(post.companyName)}</h4>
+          <p>${sanitizeHtml(post.jobDescription)}</p>
+          <button class="approve-posting-btn" data-id="${sanitizeHtml(post.id)}">Approve</button>
+          <button class="reject-posting-btn" data-id="${sanitizeHtml(post.id)}">Reject</button>
+        `;
+        adminPendingContainer.appendChild(postDiv);
+      });
+
+      adminPendingContainer.onclick = handleAdminAction;
     }
-    if (response.status !== 204) {
-      return await response.json();
-    }
-    return null;
   } catch (error) {
-    showToast(error.message, 'error');
-    throw error;
-  } finally {
-    hideLoadingSpinner();
+    console.error('Error loading admin panel:', error);
+    showToast('Error loading admin panel', 'error');
   }
 }
 
-// Animate Stats
-function animateStats() {
-  const statsEls = document.querySelectorAll('.stat-number');
-  statsEls.forEach(stat => {
-    const target = parseInt(stat.textContent);
-    const duration = 2000;
-    const increment = target / (duration / 16);
-    let current = 0;
-    const animate = () => {
-      current += increment;
-      if (current < target) {
-        stat.textContent = Math.floor(current).toLocaleString();
-        requestAnimationFrame(animate);
-      } else {
-        stat.textContent = target.toLocaleString();
-      }
-    };
-    animate();
+async function handleAdminAction(e) {
+  if (e.target.classList.contains('approve-posting-btn')) {
+    const postingId = e.target.dataset.id;
+    await approvePosting(postingId);
+  } else if (e.target.classList.contains('reject-posting-btn')) {
+    const postingId = e.target.dataset.id;
+    const reason = prompt('Enter rejection reason:', 'Not suitable');
+    if (reason) {
+      await rejectPosting(postingId, reason);
+    }
+  }
+}
+
+async function approvePosting(postingId) {
+  try {
+    await fetchWithErrorHandling(API_ENDPOINTS.ADMIN.APPROVE(postingId), {
+      method: 'POST',
+      headers: getAuthHeaders(),
+      body: JSON.stringify({ postingId })
+    });
+    showToast('Posting approved!', 'success');
+    const job = jobs.find(j => j.id === postingId);
+    if (job) job.status = 'APPROVED';
+    showAdminPanel();
+    renderJobs(jobs);
+  } catch (error) {
+    console.error('Error approving posting:', error);
+    showToast(error.message || 'Error approving posting', 'error');
+  }
+}
+
+async function rejectPosting(postingId, reason) {
+  try {
+    await fetchWithErrorHandling(API_ENDPOINTS.ADMIN.REJECT(postingId), {
+      method: 'POST',
+      headers: getAuthHeaders(),
+      body: JSON.stringify({ postingId, reason })
+    });
+    showToast('Posting rejected!', 'success');
+    const job = jobs.find(j => j.id === postingId);
+    if (job) {
+      job.status = 'REJECTED';
+      job.rejectionReason = reason;
+    }
+    showAdminPanel();
+    renderJobs(jobs);
+  } catch (error) {
+    console.error('Error rejecting posting:', error);
+    showToast(error.message || 'Error rejecting posting', 'error');
+  }
+}
+
+function renderJobs(jobsToRender) {
+  const container = document.getElementById('jobListings');
+  container.innerHTML = '';
+
+  if (!Array.isArray(jobsToRender) || jobsToRender.length === 0) {
+    container.innerHTML = '<div class="no-jobs">No jobs found</div>';
+    return;
+  }
+
+  jobsToRender.forEach(job => {
+    const jobCard = document.createElement('div');
+    jobCard.className = 'job-card';
+    jobCard.innerHTML = `
+      <div class="job-card-header">
+        <h3 class="job-title">${sanitizeHtml(job.jobTitle || 'No Title')}</h3>
+        <div class="job-meta">
+          <span class="company-name">${sanitizeHtml(job.companyName || 'Unknown Company')}</span>
+          <span class="location">${sanitizeHtml(job.location || 'No Location')}</span>
+        </div>
+      </div>
+      <div class="job-card-body">
+        <p class="job-description">${sanitizeHtml(job.jobDescription || 'No Description')}</p>
+        ${job.skills ? `
+        <div class="skills">
+          ${job.skills.split(',')
+          .map(skill => `<span class="skill-tag">${sanitizeHtml(skill.trim())}</span>`)
+          .join('')}
+        </div>` : ''}
+        <div class="job-meta-bottom">
+          <span class="job-type">${sanitizeHtml(job.jobType || 'Not Specified')}</span>
+          <span class="salary">${sanitizeHtml(job.startingSalary || 'Not Specified')}</span>
+        </div>
+      </div>
+      <div class="job-card-footer">
+        ${currentUser && currentUser.role === userRoles.STUDENT ? `<button class="apply-btn" data-job-id="${sanitizeHtml(job.id)}">Apply Now</button>` : ''}
+      </div>
+    `;
+    container.appendChild(jobCard);
   });
 }
 
-// Sanitize HTML
-function sanitizeHtml(str) {
-  if (!str) return '';
-  return String(str)
-    .replace(/&/g, '&amp;')
-    .replace(/</g, '&lt;')
-    .replace(/>/g, '&gt;')
-    .replace(/"/g, '&quot;')
-    .replace(/'/g, '&#039;');
+function showToast(message, type = 'success') {
+  const toast = document.createElement('div');
+  toast.className = `toast ${type}`;
+  toast.textContent = message;
+  document.body.appendChild(toast);
+  toast.offsetHeight;
+  toast.classList.add('visible');
+  setTimeout(() => {
+    toast.classList.remove('visible');
+    setTimeout(() => {
+      document.body.removeChild(toast);
+    }, 300);
+  }, 3000);
 }
 
-// Show/Hide loading spinner
 function showLoadingSpinner() {
   const spinner = document.getElementById('loadingSpinner');
   if (spinner) spinner.style.display = 'flex';
@@ -832,33 +798,47 @@ function hideLoadingSpinner() {
   if (spinner) spinner.style.display = 'none';
 }
 
-// Toast Notifications
-function showToast(message, type = 'success') {
-  const toast = document.createElement('div');
-  toast.className = `toast ${type}`;
-  toast.textContent = message;
-  document.body.appendChild(toast);
-  toast.offsetHeight; // trigger reflow
-  toast.classList.add('visible');
-  setTimeout(() => {
-    toast.classList.remove('visible');
-    setTimeout(() => {
-      document.body.removeChild(toast);
-    }, 300);
-  }, 3000);
+function fetchWithErrorHandling(url, options = {}) {
+  return new Promise(async (resolve, reject) => {
+    showLoadingSpinner();
+    try {
+      const headers = { 'Content-Type': 'application/json', ...options.headers };
+      const response = await fetch(url, { ...options, headers });
+      if (!response.ok) {
+        const errorData = await response.text();
+        let errorMessage = `HTTP error: ${response.status}`;
+        try {
+          const parsedError = JSON.parse(errorData);
+          if (parsedError.error) errorMessage = parsedError.error;
+        } catch {
+          // If not JSON, use default errorMessage
+        }
+        throw new Error(errorMessage);
+      }
+      if (response.status !== 204) {
+        const jsonData = await response.json();
+        resolve(jsonData);
+      } else {
+        resolve(null);
+      }
+    } catch (error) {
+      showToast(error.message, 'error');
+      reject(error);
+    } finally {
+      hideLoadingSpinner();
+    }
+  });
 }
 
-// Auth Headers and Token
 function getAuthHeaders() {
   const token = localStorage.getItem('authToken');
   return token ? { 'Authorization': `Bearer ${token}` } : {};
 }
 
 function getCurrentToken() {
-  return localStorage.getItem('authToken') ? btoa(`${currentUser.id}:${currentUser.role}:${Date.now()}`) : '';
+  return localStorage.getItem('authToken') || '';
 }
 
-// Handle Register Role Change
 function handleRegisterRoleChange(e) {
   const role = e.target.value;
   const registerFields = document.getElementById('registerFields');
@@ -903,4 +883,91 @@ function handleRegisterRoleChange(e) {
       </div>
     `;
   }
+}
+
+/**
+ * Updates the UI based on the user's authentication status.
+ */
+function updateUIForAuthenticatedUser() {
+  const loginLink = document.getElementById('loginLink');
+  const registerLink = document.getElementById('registerLink');
+  const logoutLink = document.getElementById('logoutLink');
+  const backpanelLink = document.getElementById('backpanelLink');
+  const inboxLink = document.getElementById('inboxLink');
+  const createListingBtn = document.getElementById('createListingBtn');
+
+  if (currentUser) {
+    console.log('Updating UI for authenticated user:', currentUser.role); // Debugging line
+
+    loginLink.style.display = 'none';
+    registerLink.style.display = 'none';
+    logoutLink.style.display = 'block';
+
+    // Show role-based links
+    const adminElements = document.querySelectorAll('.admin-only');
+    const studentElements = document.querySelectorAll('.student-only');
+    const employerElements = document.querySelectorAll('.employer-only');
+
+    adminElements.forEach(el => el.style.display = currentUser.role === userRoles.ADMIN ? 'block' : 'none');
+    studentElements.forEach(el => el.style.display = currentUser.role === userRoles.STUDENT ? 'block' : 'none');
+    employerElements.forEach(el => el.style.display = currentUser.role === userRoles.EMPLOYER ? 'block' : 'none');
+
+    // Show create listing button for employers
+    if (currentUser.role === userRoles.EMPLOYER) {
+      createListingBtn.style.display = 'block';
+      console.log('Displayed "Create New Listing" button'); // Debugging line
+    } else {
+      createListingBtn.style.display = 'none';
+    }
+
+  } else {
+    console.log('Updating UI for unauthenticated user'); // Debugging line
+
+    loginLink.style.display = 'block';
+    registerLink.style.display = 'block';
+    logoutLink.style.display = 'none';
+
+    // Hide role-based links
+    const adminElements = document.querySelectorAll('.admin-only');
+    const studentElements = document.querySelectorAll('.student-only');
+    const employerElements = document.querySelectorAll('.employer-only');
+
+    adminElements.forEach(el => el.style.display = 'none');
+    studentElements.forEach(el => el.style.display = 'none');
+    employerElements.forEach(el => el.style.display = 'none');
+
+    // Hide create listing button
+    createListingBtn.style.display = 'none';
+  }
+}
+
+/**
+ * Shows or hides UI elements based on the user's role.
+ * Currently, this function calls `updateUIForAuthenticatedUser` as it handles role-based visibility.
+ * You can expand this function if additional role-based UI manipulations are needed.
+ */
+function showBasedOnRole() {
+  updateUIForAuthenticatedUser();
+}
+
+/**
+ * Sanitizes HTML to prevent XSS attacks.
+ * @param {string} str - The string to sanitize.
+ * @returns {string} - The sanitized string.
+ */
+function sanitizeHtml(str) {
+  if (typeof str !== 'string') return '';
+  return str.replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#039;');
+}
+
+/**
+ * Animates the statistics numbers (Optional Enhancement).
+ * You can implement this function to add animations to your stats if desired.
+ */
+function animateStats() {
+  // Placeholder for stats animation logic
 }
