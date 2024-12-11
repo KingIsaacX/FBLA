@@ -2,298 +2,181 @@
 <html lang="en">
 
 <head>
-    <!-- Meta tags for proper character encoding and making the page responsive -->
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Great Valley Job Board</title>
-
-    <!-- CSS Styles Section -->
     <style>
-        /* Define global CSS variables for color scheme, making the website consistent in design */
         :root {
             --primary: #283593;
-            /* Primary color for the website */
             --background: #f5f7fb;
-            /* Background color */
             --card-bg: white;
-            /* Background color for cards */
             --text: #333;
-            /* Default text color */
             --text-secondary: #666;
-            /* Secondary text color for less emphasis */
         }
 
-        /* Universal reset for all elements: zero margins, paddings, box-sizing, and font family */
         * {
             margin: 0;
             padding: 0;
             box-sizing: border-box;
             font-family: system-ui, -apple-system, sans-serif;
-            /* System font family for consistency */
         }
 
-        /* Body styling: setting the background color and ensuring it takes up the full height */
         body {
             background: var(--background);
             min-height: 100vh;
-            /* Ensuring body takes full viewport height */
         }
 
-        /* Navigation bar styling */
         .nav {
             background: var(--primary);
-            /* Background set to primary color */
             color: white;
-            /* Text color set to white */
             padding: 1rem 0;
-            /* Padding inside nav bar */
             position: sticky;
-            /* Keep the nav bar fixed on top */
             top: 0;
-            /* Position it at the top of the page */
             z-index: 100;
-            /* Ensure it stays above other elements */
         }
 
-        /* Styling for the content inside the navigation bar */
         .nav-content {
             max-width: 1200px;
-            /* Maximum width for the content */
             margin: 0 auto;
-            /* Center the content */
             padding: 0 1rem;
-            /* Horizontal padding */
             display: flex;
-            /* Flex layout for responsive design */
             justify-content: space-between;
-            /* Space between the items */
             align-items: center;
-            /* Vertically center items */
         }
 
-        /* Logo styling inside the navigation bar */
         .logo {
             display: flex;
-            /* Flexbox layout for logo elements */
             align-items: center;
-            /* Vertically center logo image and text */
             gap: 0.5rem;
-            /* Gap between logo image and text */
         }
 
         .logo img {
             height: 40px;
-            /* Set height of logo image */
             width: 40px;
-            /* Set width of logo image */
         }
 
-        /* Links in the navigation bar styling */
         .nav-links {
             display: flex;
-            /* Flexbox for horizontal alignment of links */
             gap: 1.5rem;
-            /* Space between links */
         }
 
         .nav-link {
             color: white;
-            /* Set link color to white */
             text-decoration: none;
-            /* Remove underline from links */
             padding: 0.5rem;
-            /* Add padding for clickable area */
             cursor: pointer;
-            /* Change cursor to pointer on hover */
         }
 
-        /* Main content container */
         .container {
             max-width: 1200px;
-            /* Maximum width of content */
             margin: 2rem auto;
-            /* Center the content with vertical margin */
             padding: 0 1rem;
-            /* Padding on left and right */
         }
 
-        /* Header section at the top of the page */
         .header-section {
             display: flex;
-            /* Flexbox for aligning elements in the header */
             gap: 1rem;
-            /* Space between elements */
             margin-bottom: 2rem;
-            /* Margin below the header section */
             align-items: center;
-            /* Center items vertically */
         }
 
-        /* Search container for the job search bar */
         .search-container {
             flex: 1;
-            /* Allow search bar to take up available space */
             background: white;
-            /* White background for the search box */
             border-radius: 8px;
-            /* Rounded corners */
             padding: 0.75rem;
-            /* Padding inside the search box */
             box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
-            /* Light shadow effect */
             display: flex;
-            /* Flexbox for input and icon alignment */
             align-items: center;
-            /* Vertically center input */
         }
 
-        /* Search input styling */
         .search-input {
             border: none;
-            /* Remove border */
             outline: none;
-            /* Remove outline on focus */
             font-size: 1rem;
-            /* Set font size */
             width: 100%;
-            /* Make the input field take up full width */
             padding: 0.5rem;
-            /* Padding for input */
         }
 
-        /* Container for statistics (active jobs, companies, etc.) */
         .stats-container {
             display: grid;
-            /* Grid layout to show stats in rows and columns */
             grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-            /* Responsive grid layout */
             gap: 1rem;
-            /* Space between stats */
             margin-bottom: 2rem;
-            /* Margin below stats section */
         }
 
-        /* Individual stat card styling */
         .stat-card {
             background: white;
-            /* White background for each stat card */
             padding: 1.5rem;
-            /* Padding inside each card */
             border-radius: 8px;
-            /* Rounded corners */
             text-align: center;
-            /* Center text inside cards */
             box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
-            /* Light shadow effect */
         }
 
-        /* Stat number (main figure) styling */
         .stat-number {
             font-size: 2rem;
-            /* Larger font size for the number */
             font-weight: bold;
-            /* Bold text */
             color: var(--primary);
-            /* Primary color for the stat number */
             margin-bottom: 0.5rem;
-            /* Margin below the number */
         }
 
-        /* Job card for displaying job listings */
         .job-card {
             background: white;
-            /* White background */
             border-radius: 8px;
-            /* Rounded corners */
             padding: 1.5rem;
-            /* Padding inside each job card */
             margin-bottom: 1rem;
-            /* Space between job cards */
             box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
-            /* Light shadow effect */
         }
 
-        /* Job title styling */
         .job-title {
             font-size: 1.25rem;
-            /* Larger font for job title */
             margin-bottom: 0.5rem;
-            /* Margin below the title */
         }
 
-        /* Meta information (company name, job date) styling */
         .job-meta {
             color: var(--text-secondary);
-            /* Lighter color for meta information */
             margin-bottom: 1rem;
-            /* Space below meta information */
             display: flex;
-            /* Flexbox for horizontal layout */
             gap: 1rem;
-            /* Space between items */
         }
 
-        /* Button styling */
         .btn {
             background: var(--primary);
-            /* Background color set to primary */
             color: white;
-            /* Text color set to white */
             border: none;
-            /* Remove border */
             padding: 0.75rem 1.5rem;
-            /* Padding for button */
             border-radius: 8px;
-            /* Rounded corners */
             cursor: pointer;
-            /* Pointer cursor on hover */
             font-size: 1rem;
-            /* Font size */
         }
 
-        /* Button hover effect */
         .btn:hover {
             opacity: 0.9;
-            /* Slightly reduce opacity when hovered */
         }
 
-        /* Modal styling */
         .modal {
             display: none;
-            /* Hidden by default */
             position: fixed;
-            /* Fixed position for modals */
             top: 0;
             left: 0;
             width: 100%;
             height: 100%;
             background: rgba(0, 0, 0, 0.5);
-            /* Semi-transparent background */
             z-index: 1000;
-            /* Place modals on top */
         }
 
-        /* Content inside modals */
         .modal-content {
             background: white;
-            /* White background for modal */
             padding: 2rem;
-            /* Padding inside modal */
             border-radius: 8px;
-            /* Rounded corners */
             width: 90%;
-            /* Modal width */
             max-width: 600px;
-            /* Maximum width */
             margin: 2rem auto;
-            /* Center modal vertically */
             position: relative;
             max-height: 90vh;
             overflow-y: auto;
-            /* Scrollable if content overflows */
         }
 
-        /* Close button inside modals */
         .close {
             position: absolute;
             right: 1rem;
@@ -301,40 +184,28 @@
             font-size: 1.5rem;
             cursor: pointer;
             color: var(--text-secondary);
-            /* Lighter color for close button */
         }
 
-        /* Form styling inside modals */
         .form-group {
             margin-bottom: 1rem;
-            /* Margin between form groups */
         }
 
         .form-group label {
             display: block;
-            /* Block display for labels */
             margin-bottom: 0.5rem;
-            /* Margin below labels */
             font-weight: 500;
-            /* Slightly bold label text */
         }
 
         .form-group input,
         .form-group textarea,
         .form-group select {
             width: 100%;
-            /* Make form fields take up full width */
             padding: 0.75rem;
-            /* Padding inside input and textarea */
             border: 1px solid #ddd;
-            /* Light border */
             border-radius: 4px;
-            /* Rounded corners for input fields */
             font-size: 1rem;
-            /* Font size for input fields */
         }
 
-        /* Toast message for notifications */
         .toast {
             position: fixed;
             bottom: 1rem;
@@ -342,132 +213,105 @@
             padding: 1rem 2rem;
             border-radius: 4px;
             color: white;
-            /* Text color for the toast */
             background: #4caf50;
-            /* Green background for success */
             display: none;
-            /* Hidden by default */
             z-index: 2000;
-            /* Make sure it appears on top */
             box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
-            /* Shadow for better visibility */
         }
 
         .toast.error {
             background: #f44336;
-            /* Red background for errors */
         }
 
         .toast.feedback {
             background: #2196f3;
-            /* Blue background for feedback */
         }
 
-        /* Styling for required field markers */
         .required {
             color: #f44336;
-            /* Red color for required text */
         }
 
-        /* Styling for application cards (for managing job applications) */
         .application-card {
             border: 1px solid #ddd;
-            /* Light border around application cards */
             border-radius: 8px;
             padding: 1.5rem;
             margin-bottom: 1rem;
             background: white;
-            /* White background for application cards */
         }
 
-        /* Status for applications (pending, approved, rejected) */
+        .application-card .status {
+            display: inline-block;
+            padding: 0.25rem 0.75rem;
+            border-radius: 1rem;
+            font-size: 0.875rem;
+            margin-bottom: 1rem;
+        }
+
         .status.pending {
             background: #fff3cd;
-            /* Yellow background for pending */
             color: #856404;
-            /* Dark yellow text */
         }
 
         .status.approved {
             background: #d4edda;
-            /* Green background for approved */
             color: #155724;
-            /* Dark green text */
         }
 
         .status.rejected {
             background: #f8d7da;
-            /* Red background for rejected */
             color: #721c24;
-            /* Dark red text */
         }
 
-        /* Actions section for application cards */
         .application-actions {
             display: flex;
             gap: 1rem;
-            /* Space between action buttons */
             margin-top: 1rem;
-            /* Margin on top */
         }
 
         .btn.approve {
             background: #28a745;
-            /* Green background for approve button */
         }
 
         .btn.reject {
             background: #dc3545;
-            /* Red background for reject button */
         }
 
-        /* Mobile view adjustments */
         @media (max-width: 768px) {
             .header-section {
                 flex-direction: column;
-                /* Stack elements in header vertically */
             }
 
             .btn {
                 width: 100%;
-                /* Make buttons full width */
             }
 
             .nav-links {
                 gap: 0.5rem;
-                /* Reduce gap between nav links */
             }
         }
     </style>
 </head>
 
 <body>
-    <!-- Main Navigation Bar -->
     <nav class="nav">
         <div class="nav-content">
             <a href="#" class="nav-link">Great Valley Job Board</a>
             <div class="nav-links">
-                <!-- Admin Panel Link (Visible only for Admins) -->
                 <a href="#" class="nav-link" id="adminLink" style="display:none;">Admin Panel</a>
-                <!-- Login/Register Links (Visible based on user state) -->
                 <a href="#" class="nav-link" id="loginLink">Login</a>
                 <a href="#" class="nav-link" id="registerLink">Register</a>
             </div>
         </div>
     </nav>
 
-    <!-- Main Content Container -->
     <main class="container">
         <div class="header-section">
-            <!-- Search Bar -->
             <div class="search-container">
                 <input type="text" id="searchInput" class="search-input" placeholder="Search jobs...">
             </div>
-            <!-- Post Job Button (Visible only for Employers) -->
             <button id="createJobBtn" class="btn" style="display:none;">Post New Job</button>
         </div>
 
-        <!-- Stats Section: Active Jobs, Companies, Applications -->
         <div class="stats-container">
             <div class="stat-card">
                 <div class="stat-number" id="activeJobsCount">0</div>
@@ -483,11 +327,9 @@
             </div>
         </div>
 
-        <!-- Job Listings Section -->
         <div id="jobListings"></div>
     </main>
 
-    <!-- Modals for login, register, posting jobs, etc. -->
     <!-- Login Modal -->
     <div id="loginModal" class="modal">
         <div class="modal-content">
@@ -560,7 +402,7 @@
         </div>
     </div>
 
-    <!-- Job Posting Modal -->
+    <!-- Post Job Modal -->
     <div id="postJobModal" class="modal">
         <div class="modal-content">
             <span class="close">&times;</span>
@@ -617,7 +459,7 @@
         </div>
     </div>
 
-    <!-- Apply for Job Modal -->
+    <!-- Apply Modal -->
     <div id="applyModal" class="modal">
         <div class="modal-content">
             <span class="close">&times;</span>
@@ -677,7 +519,7 @@
         </div>
     </div>
 
-    <!-- Admin Panel Modal -->
+    <!-- Admin Modal -->
     <div id="adminModal" class="modal">
         <div class="modal-content">
             <span class="close">&times;</span>
@@ -695,11 +537,10 @@
         </div>
     </div>
 
-    <!-- Toast Notification -->
     <div id="toast" class="toast"></div>
 
     <script>
-        // Storage Configuration for Jobs, Users, Applications, and Current User
+        // Storage Configuration
         const STORAGE_KEYS = {
             JOBS: 'jobs',
             USERS: 'users',
@@ -707,7 +548,7 @@
             CURRENT_USER: 'currentUser'
         };
 
-        // Initialize default data if none exists in localStorage
+        // Initialize default data
         function initializeStorage() {
             if (!localStorage.getItem(STORAGE_KEYS.JOBS)) {
                 localStorage.setItem(STORAGE_KEYS.JOBS, JSON.stringify([]));
@@ -725,7 +566,7 @@
             }
         }
 
-        // Utility Functions to fetch and save data to localStorage
+        // Utility Functions
         function getData(key) {
             return JSON.parse(localStorage.getItem(key)) || [];
         }
@@ -734,7 +575,6 @@
             localStorage.setItem(key, JSON.stringify(data));
         }
 
-        // Toast Notification Function to display messages
         function showToast(message, isError = false) {
             const toast = document.getElementById('toast');
             toast.textContent = message;
@@ -745,7 +585,7 @@
             }, 3000);
         }
 
-        // Close all modals
+        // Modal Management
         function closeAllModals() {
             document.querySelectorAll('.modal').forEach(modal => {
                 modal.style.display = 'none';
@@ -762,12 +602,12 @@
             }
         };
 
-        // Authentication Functions
+        // Authentication
         document.getElementById('loginLink').onclick = () => {
             const currentUser = JSON.parse(localStorage.getItem(STORAGE_KEYS.CURRENT_USER));
             if (currentUser) {
                 localStorage.removeItem(STORAGE_KEYS.CURRENT_USER);
-                updateUIForUser(null); // Update UI on logout
+                updateUIForUser(null);
                 showToast('Logged out successfully');
                 return;
             }
@@ -795,7 +635,7 @@
             }
         };
 
-        // Registration Function
+        // Registration
         document.getElementById('registerLink').onclick = () => {
             document.getElementById('registerModal').style.display = 'block';
         };
@@ -841,6 +681,7 @@
 
             users.push(userData);
             saveData(STORAGE_KEYS.USERS, users);
+            localStorage.setItem(STORAGE_KEYS.CURRENT_USER, JSON.stringify(userData));
 
             closeAllModals();
             e.target.reset();
@@ -851,7 +692,7 @@
             showToast('Registration successful!');
         };
 
-        // Post New Job Functions
+        // Job Management
         document.getElementById('createJobBtn').onclick = () => {
             const currentUser = JSON.parse(localStorage.getItem(STORAGE_KEYS.CURRENT_USER));
             if (!currentUser || currentUser.role !== 'employer') {
@@ -897,7 +738,7 @@
             updateStats();
         };
 
-        // Admin Panel Functions
+        // Admin Functionality
         document.getElementById('adminLink').onclick = () => {
             const currentUser = JSON.parse(localStorage.getItem(STORAGE_KEYS.CURRENT_USER));
             if (!currentUser || currentUser.role !== 'admin') {
@@ -909,7 +750,6 @@
             document.getElementById('adminModal').style.display = 'block';
         };
 
-        // Render pending jobs for admin review
         function renderPendingJobs() {
             const pendingJobs = getData(STORAGE_KEYS.JOBS).filter(job => job.status === 'pending');
             const container = document.getElementById('pendingJobs');
@@ -930,7 +770,7 @@
                 `).join('');
         }
 
-        // Job Actions (Approve or Reject Jobs)
+        // Job Actions
         window.approveJob = (jobId) => {
             const jobs = getData(STORAGE_KEYS.JOBS);
             const jobIndex = jobs.findIndex(job => job.id === jobId);
@@ -997,7 +837,7 @@
                 `).join('');
         }
 
-        // Application System for Students to apply
+        // Application System
         window.showApplyForm = (jobId) => {
             const currentUser = JSON.parse(localStorage.getItem(STORAGE_KEYS.CURRENT_USER));
             if (!currentUser || currentUser.role !== 'student') {
@@ -1149,7 +989,7 @@
             document.getElementById('applicationsCount').textContent = applications.length;
         }
 
-        // UI State Management for user-specific features (login/logout, admin panel, post job button)
+        // UI State Management
         function updateUIForUser(user) {
             const adminLink = document.getElementById('adminLink');
             const createJobBtn = document.getElementById('createJobBtn');
@@ -1157,28 +997,28 @@
             const registerLink = document.getElementById('registerLink');
 
             if (user) {
-                loginLink.textContent = 'Logout'; // Change link text to "Logout" when logged in
-                registerLink.style.display = 'none'; // Hide register link when logged in
-                adminLink.style.display = user.role === 'admin' ? 'block' : 'none'; // Show admin panel for admins
-                createJobBtn.style.display = user.role === 'employer' ? 'block' : 'none'; // Show job posting for employers
+                loginLink.textContent = 'Logout';
+                registerLink.style.display = 'none';
+                adminLink.style.display = user.role === 'admin' ? 'block' : 'none';
+                createJobBtn.style.display = user.role === 'employer' ? 'block' : 'none';
             } else {
-                loginLink.textContent = 'Login'; // Change to "Login" when logged out
-                registerLink.style.display = 'block'; // Show register link when logged out
-                adminLink.style.display = 'none'; // Hide admin panel link when not logged in
-                createJobBtn.style.display = 'none'; // Hide job posting button when not logged in
+                loginLink.textContent = 'Login';
+                registerLink.style.display = 'block';
+                adminLink.style.display = 'none';
+                createJobBtn.style.display = 'none';
             }
         }
 
-        // Initialize the application by loading data from localStorage
+        // Initialize Application
         function initializeApp() {
-            initializeStorage(); // Initialize storage if no data exists
+            initializeStorage();
             const currentUser = JSON.parse(localStorage.getItem(STORAGE_KEYS.CURRENT_USER));
-            updateUIForUser(currentUser); // Update UI based on current user
-            renderJobs(); // Render job listings
-            updateStats(); // Update stats on page load
+            updateUIForUser(currentUser);
+            renderJobs();
+            updateStats();
         }
 
-        // Start the application when the DOM content is fully loaded
+        // Start the application
         document.addEventListener('DOMContentLoaded', initializeApp);
     </script>
 </body>
