@@ -1,10 +1,13 @@
 package org.gvfbla.api;
 
 import java.io.IOException;
+import java.util.Base64;
 import java.util.Map;
 
+import org.gvfbla.AccountManager;
 import org.gvfbla.AdminAccount;
 import org.gvfbla.PostingException;
+import org.gvfbla.account;
 import org.gvfbla.posting;
 
 import jakarta.servlet.annotation.WebServlet;
@@ -17,6 +20,14 @@ import jakarta.servlet.http.HttpServletResponse;
  */
 @WebServlet("/api/admin/*")
 public class AdminController extends BaseApiController {
+
+    private AccountManager accountManager;
+
+    @Override
+    public void init() throws jakarta.servlet.ServletException {
+        super.init();
+        this.accountManager = new AccountManager(); // Initialize AccountManager
+    }
 
     /**
      * Handles HTTP POST requests for admin actions. Supports:
@@ -35,9 +46,16 @@ public class AdminController extends BaseApiController {
         try {
             AdminRequest adminRequest = gson.fromJson(request.getReader(), AdminRequest.class);
 
+            // Validate admin token
+            AdminAccount admin = validateAdminToken(adminRequest.token);
+            if (admin == null) {
+                sendError(response, HttpServletResponse.SC_UNAUTHORIZED, "Invalid or missing admin token");
+                return;
+            }
+
             if ("/approve".equals(path)) {
                 posting approvedPosting = jobBoardController.approvePosting(
-                    adminRequest.admin,
+                    admin,
                     adminRequest.postingId
                 );
                 sendJsonResponse(response, Map.of(
@@ -46,7 +64,7 @@ public class AdminController extends BaseApiController {
                 ));
             } else if ("/reject".equals(path)) {
                 jobBoardController.rejectPosting(
-                    adminRequest.admin,
+                    admin,
                     adminRequest.postingId,
                     adminRequest.reason
                 );
@@ -54,10 +72,53 @@ public class AdminController extends BaseApiController {
             } else {
                 sendError(response, HttpServletResponse.SC_NOT_FOUND, "Invalid endpoint");
             }
-        } catch (PostingException e) {
-            sendError(response, HttpServletResponse.SC_BAD_REQUEST, e.getMessage());
         } catch (Exception e) {
             sendError(response, HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "Error processing request");
+        }
+    }
+
+    /**
+     * Validates the admin token and retrieves the AdminAccount.
+     *
+     * @param token the admin token from the request
+     * @return the AdminAccount if valid, null otherwise
+     */
+    private AdminAccount validateAdminToken(String token) {
+        account user = validateTokenAndGetUser(token);
+        if (user instanceof AdminAccount) {
+            return (AdminAccount) user;
+        }
+        return null;
+    }
+
+    /**
+     * Validates the token and retrieves the associated user account.
+     *
+     * @param token the authentication token
+     * @return the account if valid, null otherwise
+     */
+    private account validateTokenAndGetUser(String token) {
+        try {
+            // Decode the token (assuming it's Base64 encoded "id:role:timestamp")
+            byte[] decodedBytes = Base64.getDecoder().decode(token);
+            String decodedString = new String(decodedBytes);
+            String[] parts = decodedString.split(":");
+            if (parts.length < 2) {
+                return null;
+            }
+            String userId = parts[0];
+            String role = parts[1];
+            // Optional: Validate timestamp for token expiration
+
+            // Retrieve the user by ID
+            account user = accountManager.findAccountById(userId);
+            if (user == null || !user.getRole().equals(role)) {
+                return null;
+            }
+            return user;
+        } catch (IllegalArgumentException e) {
+            // Invalid Base64 encoding
+            return null;
         }
     }
 
@@ -66,8 +127,8 @@ public class AdminController extends BaseApiController {
      * including approving or rejecting a posting.
      */
     private static class AdminRequest {
-        AdminAccount admin;
+        String token;       // Bearer token for admin authentication
         String postingId;
-        String reason;  // For rejection
+        String reason;      // For rejection
     }
 }

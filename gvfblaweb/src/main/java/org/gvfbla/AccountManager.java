@@ -142,6 +142,8 @@ public class AccountManager {
         if (acc != null) {
             acc.setActive(false);
             saveAccounts();
+        } else {
+            throw new AccountException("Account not found");
         }
     }
     
@@ -160,6 +162,8 @@ public class AccountManager {
         if (acc != null) {
             acc.setActive(true);
             saveAccounts();
+        } else {
+            throw new AccountException("Account not found");
         }
     }
     
@@ -235,16 +239,6 @@ public class AccountManager {
     }
     
     /**
-     * Checks if a username is already taken.
-     *
-     * @param username the username to check
-     * @return true if the username exists, false otherwise
-     */
-    private boolean isUsernameTaken(String username) {
-        return accounts.stream().anyMatch(a -> a.getUsername().equals(username));
-    }
-    
-    /**
      * Checks if an email address is valid.
      * 
      * @param email the email address to validate
@@ -259,5 +253,39 @@ public class AccountManager {
      */
     private void saveAccounts() {
         fileManager.saveAccounts(accounts);
+    }
+
+    /**
+     * Adds a new account to the system.
+     *
+     * @param account the account to add
+     * @throws AccountException if the username is already taken
+     */
+    public void addAccount(account account) throws AccountException {
+        if (isUsernameTaken(account.getUsername())) {
+            throw new AccountException("Username already exists");
+        }
+        accounts.add(account);
+        saveAccounts();
+    }
+
+    /**
+     * Checks if a username is already taken.
+     *
+     * @param username the username to check
+     * @return true if the username exists, false otherwise
+     */
+    public boolean isUsernameTaken(String username) {
+        return accounts.stream()
+            .anyMatch(a -> a.getUsername().equals(username));
+    }
+
+    /**
+     * Retrieves all accounts.
+     *
+     * @return a list of all account objects
+     */
+    public List<account> getAllAccounts() {
+        return accounts;
     }
 }

@@ -34,6 +34,7 @@ public class EmployerAccount extends account {
      * @param action the action to check
      * @return true if the employer can perform the action, false otherwise
      */
+
     @Override
     public boolean hasPermission(String action) {
         switch (action) {
@@ -41,6 +42,7 @@ public class EmployerAccount extends account {
             case "VIEW_APPLICATIONS":
             case "UPDATE_JOB":
             case "DELETE_JOB":
+            case "MANAGE_APPLICATIONS":
                 return true;
             default:
                 return false;

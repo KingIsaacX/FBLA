@@ -1,0 +1,35 @@
+[
+  {
+    "id": "9912e8b0-e6aa-4b1a-bd61-b2390ac9f234",
+    "username": "admin",
+    "passwordHash": "/So3JAkT9aMmVDpJM80v+c+aSCImhCUotlya7pG7VxI\u003d",
+    "salt": "0EsImiwtoKy9BWwC2W9d0w\u003d\u003d",
+    "email": "admin@school.edu",
+    "role": "ADMIN",
+    "isActive": true
+  },
+  {
+    "skills": [],
+    "appliedJobs": [],
+    "id": "e5169d76-3e6d-41e4-988a-a4c243b659e8",
+    "username": "Student2",
+    "passwordHash": "DHiTOmPbRD3GH1etbSVY7pIgflKD1CYzC65G4jc575Q\u003d",
+    "salt": "U3slFJnUhiDcUJS4+ijzGg\u003d\u003d",
+    "email": "student2@gmail.com",
+    "role": "STUDENT",
+    "isActive": true,
+    "lastLoginDate": "2024-12-11T03:27:54.8136945"
+  },
+  {
+    "companyName": "Employer2Company",
+    "postedJobs": [],
+    "id": "5c8c65d8-2381-44dd-8a03-6e4b612be6a0",
+    "username": "Employer2",
+    "passwordHash": "H4ne0VUrHAow20nRtgeEfrNE2WqKrI/cuCOx4wGpn24\u003d",
+    "salt": "cKBx8r3W88dXRkM1fZfvrA\u003d\u003d",
+    "email": "employer2@gmail.com",
+    "role": "EMPLOYER",
+    "isActive": true,
+    "lastLoginDate": "2024-12-11T03:34:00.9960932"
+  }
+]

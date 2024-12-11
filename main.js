@@ -1,720 +1,613 @@
-// Initialize HTML structure
-document.body.innerHTML = `
-<nav class="nav">
-  <div class="nav-content">
-    <a href="#" class="nav-link">Home</a>
-    <div class="nav-links">
-      <a href="#" class="nav-link">Inbox</a>
-      <a href="#" class="nav-link">Backpanel</a>
-      <a href="#" class="nav-link">Register</a>
-      <a href="#" class="nav-link">Log in</a>
-    </div>
-  </div>
-</nav>
-<main class="container">
-  <div class="header-section">
-    <div class="search-container">
-      <svg class="search-icon" xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-        <circle cx="11" cy="11" r="8"></circle>
-        <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
-      </svg>
-      <input type="text" id="searchInput" class="search-input" placeholder="Search for jobs...">
-    </div>
-    <button id="createListingBtn" class="create-btn">
-      <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-        <line x1="12" y1="5" x2="12" y2="19"></line>
-        <line x1="5" y1="12" x2="19" y2="12"></line>
-      </svg>
-      Create New Listing
-    </button>
-  </div>
-  
-  <div class="stats-container">
-    <div class="stat-card">
-      <div class="stat-number" data-target="1500">0</div>
-      <div class="stat-label">Active Jobs</div>
-    </div>
-    <div class="stat-card">
-      <div class="stat-number" data-target="5000">0</div>
-      <div class="stat-label">Companies</div>
-    </div>
-    <div class="stat-card">
-      <div class="stat-number" data-target="10000">0</div>
-      <div class="stat-label">Students Placed</div>
-    </div>
-  </div>
+// Define base URL for API
+const BASE_URL = 'http://localhost:7000';
 
-  <div class="filter-container" id="filterContainer">
-    <button class="filter-tag active" data-category="all">All Jobs</button>
-    <button class="filter-tag" data-category="technology">Technology</button>
-    <button class="filter-tag" data-category="marketing">Marketing</button>
-    <button class="filter-tag" data-category="business">Business</button>
-  </div>
-
-  <div id="jobListings" class="job-listings">
-    <!-- Job listings will be inserted here -->
-  </div>
-</main>
-
-<button id="scrollTopBtn" class="scroll-top">↑</button>
-
-<div class="modal" id="createJobModal">
-  <div class="modal-content">
-    <button class="modal-close">&times;</button>
-    <h2>Create New Job Listing</h2>
-    <form id="createJobForm">
-      <div class="form-group">
-        <label for="jobTitle">Job Title</label>
-        <input type="text" id="jobTitle" required>
-      </div>
-      <div class="form-group">
-        <label for="company">Company</label>
-        <input type="text" id="company" required>
-      </div>
-      <div class="form-group">
-        <label for="location">Location</label>
-        <input type="text" id="location" required>
-      </div>
-      <div class="form-group">
-        <label for="jobType">Job Type</label>
-        <select id="jobType" required>
-          <option value="Full-time">Full-time</option>
-          <option value="Part-time">Part-time</option>
-          <option value="Internship">Internship</option>
-        </select>
-      </div>
-      <div class="form-group">
-        <label for="salary">Salary Range</label>
-        <input type="text" id="salary" placeholder="e.g., $50,000 - $70,000" required>
-      </div>
-      <div class="form-group">
-        <label for="description">Description</label>
-        <textarea id="description" rows="4" required></textarea>
-      </div>
-      <div class="form-group">
-        <label for="requirements">Requirements</label>
-        <textarea id="requirements" rows="4" required></textarea>
-      </div>
-      <button type="submit" class="create-btn">Create Listing</button>
-    </form>
-  </div>
-</div>
-
-<div id="backgroundPattern" class="background-pattern"></div>
-`;
-
-// Add styles
-const styles = document.createElement('style');
-styles.textContent = `
-  :root {
-    --primary-color: #283593;
-    --background-color: #f5f7fb;
-    --card-background: white;
-  }
-
-  * {
-    margin: 0;
-    padding: 0;
-    box-sizing: border-box;
-    font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
-  }
-
-  body {
-    background: var(--background-color);
-    min-height: 100vh;
-    overflow-x: hidden;
-  }
-
-  .nav {
-    background: var(--primary-color);
-    color: white;
-    padding: 1rem 0;
-    position: sticky;
-    top: 0;
-    z-index: 100;
-    transition: all 0.3s ease;
-  }
-
-  .nav-scrolled {
-    padding: 0.5rem 0;
-    background: rgba(40, 53, 147, 0.95);
-    backdrop-filter: blur(10px);
-  }
-
-  .nav-content {
-    max-width: 1200px;
-    margin: 0 auto;
-    padding: 0 1rem;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-  }
-
-  .nav-links {
-    display: flex;
-    gap: 1.5rem;
-  }
-
-  .nav-link {
-    color: white;
-    text-decoration: none;
-    padding: 0.5rem;
-    transition: all 0.2s ease;
-    position: relative;
-  }
-
-  .nav-link::after {
-    content: '';
-    position: absolute;
-    bottom: 0;
-    left: 50%;
-    width: 0;
-    height: 2px;
-    background: white;
-    transition: all 0.2s ease;
-    transform: translateX(-50%);
-  }
-
-  .nav-link:hover::after {
-    width: 80%;
-  }
-
-  .container {
-    max-width: 1200px;
-    margin: 2rem auto;
-    padding: 0 1rem;
-  }
-
-  .header-section {
-    display: flex;
-    gap: 1rem;
-    margin-bottom: 2rem;
-    align-items: center;
-  }
-
-  .search-container {
-    flex: 1;
-    background: white;
-    border-radius: 8px;
-    padding: 0.75rem;
-    box-shadow: 0 2px 4px rgba(0,0,0,0.05);
-    display: flex;
-    align-items: center;
-    transition: all 0.2s ease;
-  }
-
-  .search-container:focus-within {
-    box-shadow: 0 4px 8px rgba(0,0,0,0.1);
-    transform: translateY(-1px);
-  }
-
-  .search-icon {
-    color: #666;
-    margin-right: 0.75rem;
-  }
-
-  .search-input {
-    border: none;
-    outline: none;
-    font-size: 1rem;
-    width: 100%;
-  }
-
-  .create-btn {
-    background: var(--primary-color);
-    color: white;
-    border: none;
-    padding: 0.75rem 1.5rem;
-    border-radius: 8px;
-    font-size: 1rem;
-    cursor: pointer;
-    display: flex;
-    align-items: center;
-    gap: 0.5rem;
-    transition: all 0.2s ease;
-  }
-
-  .create-btn:hover {
-    transform: translateY(-1px);
-    box-shadow: 0 4px 8px rgba(40, 53, 147, 0.2);
-  }
-
-  .stats-container {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-    gap: 1rem;
-    margin-bottom: 2rem;
-  }
-
-  .stat-card {
-    background: white;
-    padding: 1.5rem;
-    border-radius: 8px;
-    text-align: center;
-    box-shadow: 0 2px 4px rgba(0,0,0,0.05);
-    transition: all 0.3s ease;
-  }
-
-  .stat-card:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 4px 8px rgba(0,0,0,0.1);
-  }
-
-  .stat-number {
-    font-size: 2rem;
-    font-weight: bold;
-    color: var(--primary-color);
-    margin-bottom: 0.5rem;
-  }
-
-  .stat-label {
-    color: #666;
-  }
-
-  .filter-container {
-    display: flex;
-    gap: 0.5rem;
-    margin-bottom: 2rem;
-    flex-wrap: wrap;
-  }
-
-  .filter-tag {
-    padding: 0.5rem 1rem;
-    border: 1px solid #ddd;
-    border-radius: 20px;
-    background: white;
-    cursor: pointer;
-    transition: all 0.2s ease;
-  }
-
-  .filter-tag.active {
-    background: var(--primary-color);
-    color: white;
-    border-color: var(--primary-color);
-  }
-
-  .job-listings {
-    display: grid;
-    gap: 1rem;
-  }
-
-  .job-card {
-    background: white;
-    border-radius: 8px;
-    padding: 1.5rem;
-    box-shadow: 0 2px 4px rgba(0,0,0,0.05);
-    transition: all 0.3s ease;
-    position: relative;
-    overflow: hidden;
-  }
-
-  .job-card:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 4px 8px rgba(0,0,0,0.1);
-  }
-
-  .job-card::before {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    background: radial-gradient(
-      800px circle at var(--mouse-x) var(--mouse-y),
-      rgba(40, 53, 147, 0.06),
-      transparent 40%
-    );
-    opacity: 0;
-    transition: opacity 0.3s;
-  }
-
-  .job-card:hover::before {
-    opacity: 1;
-  }
-
-  .modal {
-    display: none;
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    background: rgba(0,0,0,0.5);
-    backdrop-filter: blur(4px);
-    justify-content: center;
-    align-items: center;
-    z-index: 1000;
-  }
-
-  .modal-content {
-    background: white;
-    padding: 2rem;
-    border-radius: 8px;
-    width: 90%;
-    max-width: 600px;
-    max-height: 90vh;
-    overflow-y: auto;
-    position: relative;
-    animation: modalSlideIn 0.3s ease;
-  }
-
-  .modal-close {
-    position: absolute;
-    top: 1rem;
-    right: 1rem;
-    background: none;
-    border: none;
-    font-size: 1.5rem;
-    cursor: pointer;
-    color: #666;
-    transition: color 0.2s ease;
-  }
-
-  .modal-close:hover {
-    color: #333;
-  }
-
-  .form-group {
-    margin-bottom: 1rem;
-  }
-
-  .form-group label {
-    display: block;
-    margin-bottom: 0.5rem;
-    font-weight: 500;
-  }
-
-  .form-group input,
-  .form-group select,
-  .form-group textarea {
-    width: 100%;
-    padding: 0.5rem;
-    border: 1px solid #ddd;
-    border-radius: 4px;
-    transition: all 0.2s ease;
-  }
-
-  .form-group input:focus,
-  .form-group select:focus,
-  .form-group textarea:focus {
-    border-color: var(--primary-color);
-    box-shadow: 0 0 0 2px rgba(40, 53, 147, 0.1);
-    outline: none;
-  }
-
-  .scroll-top {
-    position: fixed;
-    bottom: 2rem;
-    right: 2rem;
-    width: 40px;
-    height: 40px;
-    border-radius: 50%;
-    background: var(--primary-color);
-    color: white;
-    border: none;
-    cursor: pointer;
-    opacity: 0;
-    transition: all 0.3s ease;
-    box-shadow: 0 2px 8px rgba(0,0,0,0.2);
-    z-index: 99;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-  }
-
-  .scroll-top:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 4px 12px rgba(0,0,0,0.3);
-  }
-
-  .background-pattern {
-    position: fixed;
-    width: 100vw;
-    height: 100vh;
-    pointer-events: none;
-    z-index: -1;
-    opacity: 0.5;
-  }
-
-  .pattern-dot {
-    position: absolute;
-    width: 4px;
-    height: 4px;
-    background: rgba(40, 53, 147, 0.1);
-    border-radius: 50%;
-    animation: float 3s ease-in-out infinite;
-  }
-
-  @keyframes float {
-    0%, 100% { transform: translateY(0); }
-    50% { transform: translateY(-20px); }
-  }
-
-  @keyframes modalSlideIn {
-    from { transform: translateY(20px); opacity: 0; }
-    to { transform: translateY(0); opacity: 1; }
-  }
-
-  @media (max-width: 768px) {
-    .header-section {
-      flex-direction: column;
-    }
-
-    .create-btn {
-      width: 100%;
-      justify-content: center;
-    }
-
-    .stats-container {
-      grid-template-columns: 1fr;
-    }
-
-    .modal-content {
-      width: 95%;
-      padding: 1rem;
-    }
-  }
-`;
-
-document.head.appendChild(styles);
-
-// Sample job data
-const jobsData = [
-    {
-        id: 1,
-        title: 'Software Developer Intern',
-        company: 'Tech Corp',
-        location: 'Remote',
-        type: 'Part-time',
-        salary: '$20-25/hr',
-        posted: '2 days ago',
-        description: 'Join our team as a software developer intern. Work on real projects and gain valuable experience in web development, mobile apps, and cloud computing.',
-        requirements: ['JavaScript', 'React', 'Node.js'],
-        category: 'technology'
+// API endpoints
+const API_ENDPOINTS = {
+  AUTH: {
+    LOGIN: `${BASE_URL}/api/auth/login`,
+    REGISTER: {
+      STUDENT: `${BASE_URL}/api/auth/register/student`,
+      EMPLOYER: `${BASE_URL}/api/auth/register/employer`
     },
-    {
-        id: 2,
-        title: 'Marketing Assistant',
-        company: 'Global Media',
-        location: 'Hybrid',
-        type: 'Full-time',
-        salary: '$40-50k/year',
-        posted: '1 day ago',
-        description: 'Exciting opportunity to work with our marketing team on digital campaigns and social media strategy.',
-        requirements: ['Social Media', 'Content Creation', 'Analytics'],
-        category: 'marketing'
-    },
-    {
-        id: 3,
-        title: 'Business Development Intern',
-        company: 'StartUp Inc',
-        location: 'In-office',
-        type: 'Part-time',
-        salary: '$18-22/hr',
-        posted: '3 days ago',
-        description: 'Looking for a motivated intern to join our business development team.',
-        requirements: ['Research', 'Excel', 'Communication'],
-        category: 'business'
-    }
-];
+    LOGOUT: `${BASE_URL}/api/auth/logout`,
+    ME: `${BASE_URL}/api/auth/me`
+  },
+  POSTINGS: `${BASE_URL}/api/postings`,
+  APPLICATIONS: {
+    BASE: `${BASE_URL}/api/applications`,
+    BY_POSTING: (id) => `${BASE_URL}/api/applications/posting/${id}`,
+    BY_USER: (id) => `${BASE_URL}/api/applications/user/${id}`
+  },
+  ADMIN: {
+    APPROVE: (id) => `${BASE_URL}/api/admin/approve/${id}`,
+    REJECT: (id) => `${BASE_URL}/api/admin/reject/${id}`
+  },
+  STATS: `${BASE_URL}/api/stats`
+};
 
-// Initialize background pattern
-const backgroundPattern = document.getElementById('backgroundPattern');
-for (let i = 0; i < 50; i++) {
-    const dot = document.createElement('div');
-    dot.className = 'pattern-dot';
-    dot.style.left = `${Math.random() * 100}vw`;
-    dot.style.top = `${Math.random() * 100}vh`;
-    dot.style.animationDelay = `${Math.random() * 2}s`;
-    backgroundPattern.appendChild(dot);
+// Roles
+const userRoles = {
+  STUDENT: 'STUDENT',
+  EMPLOYER: 'EMPLOYER',
+  ADMIN: 'ADMIN'
+};
+
+// Global State
+let currentUser = null;
+let jobs = [];
+let stats = {
+  activeJobs: 0,
+  companies: 0,
+  studentsPlaced: 0
+};
+
+// Initialize app on DOMContentLoaded
+document.addEventListener('DOMContentLoaded', initializeApp);
+
+function initializeApp() {
+  initializeHTML();
+  initializeEventListeners();
+  fetchInitialData();
+  checkAuthentication().then(() => {
+    loadUserDashboard();
+  });
 }
 
-// Function to render jobs
-function renderJobs(jobs) {
-    const container = document.getElementById('jobListings');
-    container.innerHTML = '';
-
-    jobs.forEach(job => {
-        const jobCard = document.createElement('div');
-        jobCard.className = 'job-card';
-        jobCard.innerHTML = `
-      <div style="display: flex; justify-content: space-between; align-items: flex-start;">
-        <div>
-          <h3 style="font-size: 1.25rem; font-weight: 600; color: var(--primary-color); margin-bottom: 0.5rem;">
-            ${job.title}
-          </h3>
-          <div style="color: #666; margin-bottom: 1rem;">
-            <span>${job.company}</span> • 
-            <span>${job.location}</span> • 
-            <span>${job.posted}</span>
-          </div>
-          <div style="display: flex; gap: 0.5rem; flex-wrap: wrap; margin-bottom: 1rem;">
-            <span class="filter-tag">${job.type}</span>
-            <span class="filter-tag">${job.salary}</span>
-          </div>
+// Build HTML Structure dynamically
+function initializeHTML() {
+  const app = document.getElementById('app');
+  app.innerHTML = `
+    <nav class="nav">
+      <div class="nav-content">
+        <a href="#" class="nav-link">School Job Board</a>
+        <div class="nav-links">
+          <a href="#" class="nav-link admin-only" id="backpanelLink" style="display:none;">Backpanel</a>
+          <a href="#" class="nav-link student-only" id="inboxLink" style="display:none;">Inbox</a>
+          <a href="#" class="nav-link" id="registerLink">Register</a>
+          <a href="#" class="nav-link" id="loginLink">Log in</a>
+          <a href="#" class="nav-link" id="logoutLink" style="display: none;">Log out</a>
         </div>
-        <button class="create-btn" onclick="applyToJob(${job.id})">Apply Now</button>
       </div>
-      <p style="color: #666; margin-bottom: 1rem;">${job.description}</p>
-      <div style="display: flex; gap: 0.5rem; flex-wrap: wrap;">
-        ${job.requirements.map(req => `<span class="filter-tag">${req}</span>`).join('')}
+    </nav>
+
+    <main class="container">
+      <div class="header-section">
+        <div class="search-container">
+          <svg class="search-icon" ... ></svg>
+          <input type="text" id="searchInput" class="search-input" placeholder="Search for jobs...">
+        </div>
+        <button id="createListingBtn" class="create-btn employer-only" style="display:none;">
+          <svg ...></svg>
+          Create New Listing
+        </button>
+      </div>
+
+      <div class="stats-container">
+        <div class="stat-card">
+          <div class="stat-number" id="activeJobsCount">0</div>
+          <div class="stat-label">Active Jobs</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-number" id="companiesCount">0</div>
+          <div class="stat-label">Companies</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-number" id="studentsPlacedCount">0</div>
+          <div class="stat-label">Students Placed</div>
+        </div>
+      </div>
+
+      <div class="filter-container" id="filterContainer">
+        <button class="filter-tag active" data-category="all">All Jobs</button>
+        <button class="filter-tag" data-category="technology">Technology</button>
+        <button class="filter-tag" data-category="marketing">Marketing</button>
+        <button class="filter-tag" data-category="business">Business</button>
+      </div>
+
+      <div id="jobListings" class="job-listings"></div>
+    </main>
+
+    <div id="createJobModal" class="modal">
+      <div class="modal-content">
+        <button class="modal-close">&times;</button>
+        <h2>Create New Job Listing</h2>
+        <form id="createJobForm">
+          <div class="form-group">
+            <label for="jobTitle">Job Title <span class="required">*</span></label>
+            <input type="text" id="jobTitle" required>
+          </div>
+          <div class="form-group">
+            <label for="company">Company <span class="required">*</span></label>
+            <input type="text" id="company" required>
+          </div>
+          <div class="form-group">
+            <label for="location">Location <span class="required">*</span></label>
+            <input type="text" id="location" required>
+          </div>
+          <div class="form-group">
+            <label for="jobType">Job Type</label>
+            <select id="jobType">
+              <option value="Full-time">Full-time</option>
+              <option value="Part-time">Part-time</option>
+              <option value="Internship">Internship</option>
+              <option value="Contract">Contract</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label for="salary">Salary Range</label>
+            <input type="text" id="salary" placeholder="e.g., 50000">
+          </div>
+          <div class="form-group">
+            <label for="description">Description <span class="required">*</span></label>
+            <textarea id="description" rows="4" required></textarea>
+          </div>
+          <div class="form-group">
+            <label for="requirements">Required Skills</label>
+            <textarea id="requirements" rows="4" placeholder="Enter skills separated by commas"></textarea>
+          </div>
+          <button type="submit" class="create-btn">Create Listing</button>
+        </form>
+      </div>
+    </div>
+
+    <button id="scrollTopBtn" class="scroll-top">↑</button>
+
+    <div id="loadingSpinner" class="loading-overlay" style="display: none;">
+      <div class="loading-spinner"></div>
+    </div>
+
+    <div id="toastContainer"></div>
+
+    <!-- Login Modal -->
+    <div id="loginModal" class="modal" style="display:none;">
+      <div class="modal-content">
+        <button class="modal-close login-modal-close">&times;</button>
+        <h2>Log In</h2>
+        <form id="loginForm">
+          <div class="form-group">
+            <label for="loginUsername">Username <span class="required">*</span></label>
+            <input type="text" id="loginUsername" required>
+          </div>
+          <div class="form-group">
+            <label for="loginPassword">Password <span class="required">*</span></label>
+            <input type="password" id="loginPassword" required>
+          </div>
+          <button type="submit" class="create-btn">Log In</button>
+        </form>
+      </div>
+    </div>
+
+    <!-- Register Modal -->
+    <div id="registerModal" class="modal" style="display:none;">
+      <div class="modal-content">
+        <button class="modal-close register-modal-close">&times;</button>
+        <h2>Register</h2>
+        <form id="registerForm">
+          <div class="form-group">
+            <label for="registerRole">Register As <span class="required">*</span></label>
+            <select id="registerRole" required>
+              <option value="" disabled selected>Select Role</option>
+              <option value="STUDENT">Student</option>
+              <option value="EMPLOYER">Employer</option>
+            </select>
+          </div>
+          <div id="registerFields"></div>
+          <button type="submit" class="create-btn">Register</button>
+        </form>
+      </div>
+    </div>
+
+    <!-- Admin Panel Modal -->
+    <div id="adminPanelModal" class="modal" style="display:none;">
+      <div class="modal-content">
+        <button class="modal-close admin-modal-close">&times;</button>
+        <h2>Admin Panel</h2>
+        <p>Pending Postings:</p>
+        <div id="adminPendingPostings"></div>
+      </div>
+    </div>
+  `;
+}
+
+function initializeEventListeners() {
+  // Search functionality
+  document.getElementById('searchInput').addEventListener('input', handleSearchInput);
+
+  // Filter functionality
+  document.getElementById('filterContainer').addEventListener('click', handleFilterClick);
+
+  // Modal controls
+  const createBtn = document.getElementById('createListingBtn');
+  const modal = document.getElementById('createJobModal');
+  const closeBtn = modal.querySelector('.modal-close');
+
+  createBtn.addEventListener('click', () => { modal.style.display = 'flex'; });
+  closeBtn.addEventListener('click', () => { modal.style.display = 'none'; });
+
+  document.getElementById('createJobForm').addEventListener('submit', handleCreateJob);
+
+  // Scroll to top
+  const scrollTopBtn = document.getElementById('scrollTopBtn');
+  window.addEventListener('scroll', handleScroll);
+  scrollTopBtn.addEventListener('click', scrollToTop);
+
+  window.addEventListener('click', (e) => {
+    if (e.target === modal) {
+      modal.style.display = 'none';
+    }
+  });
+
+  // Apply button clicks
+  document.getElementById('jobListings').addEventListener('click', handleApplyClick);
+
+  // Auth Modals
+  const loginModal = document.getElementById('loginModal');
+  const loginModalCloseBtn = loginModal.querySelector('.login-modal-close');
+  const loginLink = document.getElementById('loginLink');
+  loginLink.addEventListener('click', (e) => { e.preventDefault(); loginModal.style.display = 'flex'; });
+  loginModalCloseBtn.addEventListener('click', () => { loginModal.style.display = 'none'; document.getElementById('loginForm').reset(); });
+  document.getElementById('loginForm').addEventListener('submit', handleLogin);
+  window.addEventListener('click', (e) => {
+    if (e.target === loginModal) {
+      loginModal.style.display = 'none';
+      document.getElementById('loginForm').reset();
+    }
+  });
+
+  // Register Modal
+  const registerModal = document.getElementById('registerModal');
+  const registerModalCloseBtn = registerModal.querySelector('.register-modal-close');
+  const registerLink = document.getElementById('registerLink');
+  registerLink.addEventListener('click', (e) => { e.preventDefault(); registerModal.style.display = 'flex'; });
+  registerModalCloseBtn.addEventListener('click', () => { registerModal.style.display = 'none'; document.getElementById('registerForm').reset(); document.getElementById('registerFields').innerHTML = ''; });
+  document.getElementById('registerRole').addEventListener('change', handleRegisterRoleChange);
+  document.getElementById('registerForm').addEventListener('submit', handleRegister);
+  window.addEventListener('click', (e) => {
+    if (e.target === registerModal) {
+      registerModal.style.display = 'none';
+      document.getElementById('registerForm').reset();
+      document.getElementById('registerFields').innerHTML = '';
+    }
+  });
+
+  // Logout
+  const logoutLink = document.getElementById('logoutLink');
+  logoutLink.addEventListener('click', (e) => {
+    e.preventDefault();
+    handleLogout();
+  });
+
+  // Admin Panel
+  const backpanelLink = document.getElementById('backpanelLink');
+  backpanelLink.addEventListener('click', (e) => {
+    e.preventDefault();
+    if (currentUser && currentUser.role === userRoles.ADMIN) {
+      showAdminPanel();
+    } else {
+      showToast('Access denied. Admins only.', 'error');
+    }
+  });
+
+  const adminPanelModal = document.getElementById('adminPanelModal');
+  const adminPanelCloseBtn = adminPanelModal.querySelector('.admin-modal-close');
+  adminPanelCloseBtn.addEventListener('click', () => {
+    adminPanelModal.style.display = 'none';
+  });
+  window.addEventListener('click', (e) => {
+    if (e.target === adminPanelModal) {
+      adminPanelModal.style.display = 'none';
+    }
+  });
+}
+
+// Handle search input
+function handleSearchInput(e) {
+  const searchTerm = e.target.value.toLowerCase();
+  const filteredJobs = jobs.filter(job =>
+    (job.jobTitle || '').toLowerCase().includes(searchTerm) ||
+    (job.companyName || '').toLowerCase().includes(searchTerm) ||
+    (job.jobDescription || '').toLowerCase().includes(searchTerm) ||
+    (job.skills || '').toLowerCase().includes(searchTerm)
+  );
+  renderJobs(filteredJobs);
+}
+
+// Handle filter click
+function handleFilterClick(e) {
+  if (e.target.classList.contains('filter-tag')) {
+    document.querySelectorAll('.filter-tag').forEach(tag => tag.classList.remove('active'));
+    e.target.classList.add('active');
+
+    const category = e.target.dataset.category;
+    const filteredJobs = category === 'all' ? jobs : jobs.filter(job => job.category && job.category.toLowerCase() === category);
+    renderJobs(filteredJobs);
+  }
+}
+
+// Handle scroll
+function handleScroll() {
+  const scrollTopBtn = document.getElementById('scrollTopBtn');
+  if (window.scrollY > 300) {
+    scrollTopBtn.style.opacity = '1';
+    scrollTopBtn.style.visibility = 'visible';
+  } else {
+    scrollTopBtn.style.opacity = '0';
+    scrollTopBtn.style.visibility = 'hidden';
+  }
+}
+
+// Scroll to top
+function scrollToTop() {
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+// Handle apply click
+function handleApplyClick(e) {
+  if (e.target.classList.contains('apply-btn')) {
+    const jobId = e.target.dataset.jobId;
+    handleJobApplication(jobId);
+  }
+}
+
+// Show Admin Panel
+async function showAdminPanel() {
+  const adminPanelModal = document.getElementById('adminPanelModal');
+  adminPanelModal.style.display = 'flex';
+
+  try {
+    // Let's assume pending postings are those with status = 'PENDING'
+    // We can filter from `jobs` or refetch if needed
+    const pending = jobs.filter(j => j.status && j.status.toUpperCase() === 'PENDING');
+
+    const adminPendingContainer = document.getElementById('adminPendingPostings');
+    adminPendingContainer.innerHTML = '';
+    if (pending.length === 0) {
+      adminPendingContainer.innerHTML = '<div>No pending postings</div>';
+    } else {
+      pending.forEach(post => {
+        const postDiv = document.createElement('div');
+        postDiv.className = 'admin-posting-card';
+        postDiv.innerHTML = `
+          <h4>${sanitizeHtml(post.jobTitle)} at ${sanitizeHtml(post.companyName)}</h4>
+          <p>${sanitizeHtml(post.jobDescription)}</p>
+          <button class="approve-posting-btn" data-id="${post.id}">Approve</button>
+          <button class="reject-posting-btn" data-id="${post.id}">Reject</button>
+        `;
+        adminPendingContainer.appendChild(postDiv);
+      });
+
+      adminPendingContainer.addEventListener('click', handleAdminAction);
+    }
+  } catch (error) {
+    console.error('Error loading admin panel:', error);
+    showToast('Error loading admin panel', 'error');
+  }
+}
+
+// Handle Admin Actions
+async function handleAdminAction(e) {
+  if (e.target.classList.contains('approve-posting-btn')) {
+    const postingId = e.target.dataset.id;
+    await approvePosting(postingId);
+  } else if (e.target.classList.contains('reject-posting-btn')) {
+    const postingId = e.target.dataset.id;
+    const reason = prompt('Enter rejection reason:', 'Not suitable');
+    if (reason) {
+      await rejectPosting(postingId, reason);
+    }
+  }
+}
+
+// Approve Posting
+async function approvePosting(postingId) {
+  try {
+    await fetchWithErrorHandling(API_ENDPOINTS.ADMIN.APPROVE(postingId), {
+      method: 'POST',
+      headers: getAuthHeaders()
+    });
+    showToast('Posting approved!', 'success');
+    // Update local jobs array
+    const job = jobs.find(j => j.id === postingId);
+    if (job) job.status = 'APPROVED';
+    showAdminPanel();
+    renderJobs(jobs);
+  } catch (error) {
+    console.error('Error approving posting:', error);
+  }
+}
+
+// Reject Posting
+async function rejectPosting(postingId, reason) {
+  try {
+    await fetchWithErrorHandling(API_ENDPOINTS.ADMIN.REJECT(postingId), {
+      method: 'POST',
+      headers: getAuthHeaders(),
+      body: JSON.stringify({ reason })
+    });
+    showToast('Posting rejected!', 'success');
+    // Update local jobs array
+    const job = jobs.find(j => j.id === postingId);
+    if (job) {
+      job.status = 'REJECTED';
+      job.rejectionReason = reason;
+    }
+    showAdminPanel();
+    renderJobs(jobs);
+  } catch (error) {
+    console.error('Error rejecting posting:', error);
+  }
+}
+
+// Handle Login
+async function handleLogin(e) {
+  e.preventDefault();
+  const username = document.getElementById('loginUsername').value.trim();
+  const password = document.getElementById('loginPassword').value.trim();
+
+  if (!username || !password) {
+    showToast('Please fill in all required fields', 'error');
+    return;
+  }
+
+  try {
+    const response = await fetchWithErrorHandling(API_ENDPOINTS.AUTH.LOGIN, {
+      method: 'POST',
+      body: JSON.stringify({ username, password })
+    });
+
+    localStorage.setItem('authToken', response.token);
+    currentUser = response.user;
+    showToast('Logged in successfully!', 'success');
+    updateUIForAuthenticatedUser();
+    showBasedOnRole();
+    loadUserDashboard();
+    document.getElementById('loginModal').style.display = 'none';
+    document.getElementById('loginForm').reset();
+  } catch (error) {
+    console.error('Login failed:', error);
+    showToast(error.message || 'Login failed.', 'error');
+  }
+}
+
+// Handle Register Role Change
+function handleRegisterRoleChange(e) {
+  const role = e.target.value;
+  const registerFields = document.getElementById('registerFields');
+  registerFields.innerHTML = '';
+
+  if (role === userRoles.STUDENT) {
+    registerFields.innerHTML = `
+      <div class="form-group">
+        <label>Username <span class="required">*</span></label>
+        <input type="text" id="studentUsername" required>
+      </div>
+      <div class="form-group">
+        <label>Full Name <span class="required">*</span></label>
+        <input type="text" id="studentFullName" required>
+      </div>
+      <div class="form-group">
+        <label>Email <span class="required">*</span></label>
+        <input type="email" id="studentEmail" required>
+      </div>
+      <div class="form-group">
+        <label>Password <span class="required">*</span></label>
+        <input type="password" id="studentPassword" required>
       </div>
     `;
-        container.appendChild(jobCard);
-    });
+  } else if (role === userRoles.EMPLOYER) {
+    registerFields.innerHTML = `
+      <div class="form-group">
+        <label>Username <span class="required">*</span></label>
+        <input type="text" id="employerUsername" required>
+      </div>
+      <div class="form-group">
+        <label>Company Name <span class="required">*</span></label>
+        <input type="text" id="employerCompanyName" required>
+      </div>
+      <div class="form-group">
+        <label>Email <span class="required">*</span></label>
+        <input type="email" id="employerEmail" required>
+      </div>
+      <div class="form-group">
+        <label>Password <span class="required">*</span></label>
+        <input type="password" id="employerPassword" required>
+      </div>
+    `;
+  }
 }
 
-// Initialize with all jobs
-renderJobs(jobsData);
+// Handle Register
+async function handleRegister(e) {
+  e.preventDefault();
+  const role = document.getElementById('registerRole').value;
 
-// Search functionality
-document.getElementById('searchInput').addEventListener('input', (e) => {
-    const searchTerm = e.target.value.toLowerCase();
-    const filteredJobs = jobsData.filter(job =>
-        job.title.toLowerCase().includes(searchTerm) ||
-        job.company.toLowerCase().includes(searchTerm) ||
-        job.description.toLowerCase().includes(searchTerm)
-    );
-    renderJobs(filteredJobs);
-});
+  if (!role) {
+    showToast('Please select a role', 'error');
+    return;
+  }
 
-// Filter functionality
-document.getElementById('filterContainer').addEventListener('click', (e) => {
-    if (e.target.classList.contains('filter-tag')) {
-        document.querySelectorAll('.filter-tag').forEach(tag => tag.classList.remove('active'));
-        e.target.classList.add('active');
+  let registrationData;
+  let endpoint;
 
-        const category = e.target.dataset.category;
-        const filteredJobs = category === 'all'
-            ? jobsData
-            : jobsData.filter(job => job.category === category);
+  if (role === userRoles.STUDENT) {
+    const username = document.getElementById('studentUsername').value.trim();
+    const fullName = document.getElementById('studentFullName').value.trim();
+    const email = document.getElementById('studentEmail').value.trim();
+    const password = document.getElementById('studentPassword').value.trim();
 
-        renderJobs(filteredJobs);
+    if (!username || !fullName || !email || !password) {
+      showToast('Please fill in all required fields', 'error');
+      return;
     }
-});
 
-// Animate stats numbers
-function animateStats() {
-    const stats = document.querySelectorAll('.stat-number');
-    stats.forEach(stat => {
-        const target = parseInt(stat.dataset.target);
-        const duration = 2000;
-        const increment = target / (duration / 16);
-        let current = 0;
+    endpoint = API_ENDPOINTS.AUTH.REGISTER.STUDENT;
+    registrationData = {
+      username,
+      password,
+      email,
+      firstName: fullName.split(' ')[0],
+      lastName: fullName.split(' ')[1] || ''
+    };
+  } else if (role === userRoles.EMPLOYER) {
+    const username = document.getElementById('employerUsername').value.trim();
+    const companyName = document.getElementById('employerCompanyName').value.trim();
+    const email = document.getElementById('employerEmail').value.trim();
+    const password = document.getElementById('employerPassword').value.trim();
 
-        const updateStat = () => {
-            current += increment;
-            stat.textContent = Math.floor(current).toLocaleString();
-            if (current < target) {
-                requestAnimationFrame(updateStat);
-            } else {
-                stat.textContent = target.toLocaleString();
-            }
-        };
+    if (!username || !companyName || !email || !password) {
+      showToast('Please fill in all required fields', 'error');
+      return;
+    }
 
-        updateStat();
+    endpoint = API_ENDPOINTS.AUTH.REGISTER.EMPLOYER;
+    registrationData = { username, password, email, companyName };
+  }
+
+  try {
+    const response = await fetchWithErrorHandling(endpoint, {
+      method: 'POST',
+      body: JSON.stringify(registrationData)
     });
-}
 
-// Initialize stats animation
-animateStats();
-
-// Create job modal functionality
-const createBtn = document.getElementById('createListingBtn');
-const modal = document.getElementById('createJobModal');
-const closeBtn = document.querySelector('.modal-close');
-
-createBtn.addEventListener('click', () => {
-    modal.style.display = 'flex';
-});
-
-closeBtn.addEventListener('click', () => {
-    modal.style.display = 'none';
-});
-
-window.addEventListener('click', (e) => {
-    if (e.target === modal) {
-        modal.style.display = 'none';
-    }
-});
-
-// Handle job creation form submission
-document.getElementById('createJobForm').addEventListener('submit', (e) => {
-    e.preventDefault();
-
-    const newJob = {
-        id: jobsData.length + 1,
-        title: document.getElementById('jobTitle').value,
-        company: document.getElementById('company').value,
-        location: document.getElementById('location').value,
-        type: document.getElementById('jobType').value,
-        salary: document.getElementById('salary').value,
-        description: document.getElementById('description').value,
-        requirements: document.getElementById('requirements').value.split(',').map(r => r.trim()),
-        category: 'technology', // Default category
-        posted: 'Just now'
+    localStorage.setItem('authToken', response.token);
+    currentUser = {
+      id: response.id,
+      username: response.username,
+      role: response.role,
+      email: registrationData.email
     };
 
-    jobsData.unshift(newJob);
-    renderJobs(jobsData);
-    modal.style.display = 'none';
-    showToast('Job listing created successfully!');
-    e.target.reset();
-});
-
-// Scroll to top button functionality
-const scrollTopBtn = document.getElementById('scrollTopBtn');
-
-window.addEventListener('scroll', () => {
-    if (window.scrollY > 300) {
-        scrollTopBtn.style.opacity = '1';
-    } else {
-        scrollTopBtn.style.opacity = '0';
-    }
-});
-
-scrollTopBtn.addEventListener('click', () => {
-    window.scrollTo({ top: 0, behavior: 'smooth' });
-});
-
-// Toast notification function
-function showToast(message, type = 'success') {
-    const toast = document.createElement('div');
-    toast.style.cssText = `
-    position: fixed;
-    bottom: 20px;
-    right: 20px;
-    padding: 1rem 2rem;
-    background: ${type === 'success' ? '#4CAF50' : '#f44336'};
-    color: white;
-    border-radius: 4px;
-    box-shadow: 0 2px 8px rgba(0,0,0,0.2);
-    z-index: 1000;
-    animation: slideIn 0.3s ease-out;
-  `;
-    toast.textContent = message;
-    document.body.appendChild(toast);
-
-    setTimeout(() => {
-        toast.style.animation = 'slideOut 0.3s ease-out';
-        setTimeout(() => toast.remove(), 300);
-    }, 3000);
+    showToast('Registration successful! Logged in.', 'success');
+    updateUIForAuthenticatedUser();
+    showBasedOnRole();
+    loadUserDashboard();
+    document.getElementById('registerModal').style.display = 'none';
+    document.getElementById('registerForm').reset();
+    document.getElementById('registerFields').innerHTML = '';
+  } catch (error) {
+    console.error('Registration failed:', error);
+    showToast(error.message || 'Registration failed.', 'error');
+  }
 }
 
-// Apply to job function
-function applyToJob(jobId) {
-    // Here you would typically handle the job application process
-    showToast(`Applied to job #${jobId} successfully!`);
+// Handle Logout
+async function handleLogout() {
+  try {
+    await fetchWithErrorHandling(API_ENDPOINTS.AUTH.LOGOUT, { method: 'POST' });
+    currentUser = null;
+    localStorage.removeItem('authToken');
+    showToast('Logged out successfully!', 'success');
+    updateUIForAuthenticatedUser();
+    document.getElementById('userDashboard') && (document.getElementById('userDashboard').style.display = 'none');
+  } catch (error) {
+    showToast('Logout failed.', 'error');
+  }
 }
 
-// Mouse tracking for job card hover effects
-document.addEventListener('mousemove', (e) => {
-    document.querySelectorAll('.job-card').forEach(card => {
-        const rect = card.getBoundingClientRect();
-        const x = e.clientX - rect.left;
-        const y = e.clientY - rect.top;
-        card.style.setProperty('--mouse-x', `${x}px`);
-        card.style.setProperty('--mouse-y', `${y}px`);
-    });
-});
+// Load User Dashboard Based on Role
+function loadUserDashboard() {
+  if (!currentUser) return;
+
+
+}
+

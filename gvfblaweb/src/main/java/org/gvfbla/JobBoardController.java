@@ -1,285 +1,260 @@
 package org.gvfbla;
 
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.stream.Collectors;
+import java.util.Objects;
 
-/**
- * Acts as a central controller for job board operations, coordinating actions
- * between account, posting, and application managers. Provides functionality
- * for user login, posting creation and approval, application submission, and
- * job searching.
- */
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 public class JobBoardController {
+    private static final Logger logger = LoggerFactory.getLogger(JobBoardController.class);
+
     private final AccountManager accountManager;
     private final PostingManager postingManager;
     private final ApplicationManager applicationManager;
-    private final PostingWorkflow postingWorkflow;
-    private final PostingSearchService searchService;
 
-    /**
-     * Constructs a new JobBoardController, initializing managers and services.
-     */
     public JobBoardController() {
         this.accountManager = new AccountManager();
         this.postingManager = new PostingManager();
         this.applicationManager = new ApplicationManager();
-        this.postingWorkflow = new PostingWorkflow(postingManager);
-        this.searchService = new PostingSearchService(postingManager);
     }
 
-    /**
-     * Authenticates a user by username and password.
-     *
-     * @param username the username of the account
-     * @param password the password of the account
-     * @return the authenticated account or null if authentication fails
-     */
     public account login(String username, String password) {
-        return accountManager.login(username, password);
+        account user = accountManager.login(username, password);
+        if (user != null) {
+            logger.info("User logged in successfully: {}", username);
+        } else {
+            logger.warn("Failed login attempt for username: {}", username);
+        }
+        return user;
     }
 
-    /**
-     * Submits a job application on behalf of a student for the specified posting.
-     *
-     * @param student      the student account submitting the application
-     * @param postingId    the ID of the job posting being applied to
-     * @param firstName    the applicant's first name
-     * @param lastName     the applicant's last name
-     * @param phoneNumber  the applicant's phone number
-     * @param email        the applicant's email address
-     * @param education    the applicant's educational background
-     * @param experience   the applicant's work experience
-     * @param references   the applicant's references
-     */
-    public void submitApplication(StudentAccount student, String postingId,
-                                  String firstName, String lastName, String phoneNumber,
-                                  String email, String education, String experience,
-                                  String references) {
-        posting jobPosting = postingManager.getAllPostings().stream()
-            .filter(p -> p.getId().equals(postingId))
-            .findFirst()
-            .orElseThrow(() -> new IllegalArgumentException("Posting not found"));
+    public StudentAccount registerStudent(String username, String password,
+                                          String email, String firstName, String lastName) throws AccountException {
+        validateRegistration(username, password, email);
+        StudentAccount student = new StudentAccount(username, password, email, firstName, lastName);
+        accountManager.addAccount(student);
+        logger.info("Student registered successfully: {}", username);
+        return student;
+    }
 
-        application newApplication = new application(student, firstName, lastName,
-            phoneNumber, email, education, experience, references, jobPosting.getId());
-        
-        applicationManager.submitApplication(newApplication);
+    public EmployerAccount registerEmployer(String username, String password,
+                                            String email, String companyName) throws AccountException {
+        validateRegistration(username, password, email);
+        EmployerAccount employer = new EmployerAccount(username, password, email, companyName);
+        accountManager.addAccount(employer);
+        logger.info("Employer registered successfully: {}", username);
+        return employer;
+    }
+
+    private void validateRegistration(String username, String password, String email) throws AccountException {
+        if (username == null || username.trim().isEmpty()) {
+            throw new AccountException("Username is required");
+        }
+        if (password == null || password.length() < 8) {
+            throw new AccountException("Password must be at least 8 characters");
+        }
+        if (email == null || !email.matches("^[A-Za-z0-9+_.-]+@(.+)$")) {
+            throw new AccountException("Valid email is required");
+        }
+        if (accountManager.isUsernameTaken(username)) {
+            throw new AccountException("Username already exists");
+        }
     }
 
     /**
      * Creates a new job posting for an employer.
-     *
-     * @param employer       the employer account creating the posting
-     * @param jobTitle       the job title
-     * @param jobDescription the job description
-     * @param skills         the required skills
-     * @param startingSalary the starting salary offered
-     * @param location       the location of the job
-     * @return the newly created posting
-     * @throws PostingException if there is an error creating the posting
      */
-    public posting createJobPosting(EmployerAccount employer, String jobTitle,
-                                    String jobDescription, String skills,
-                                    String startingSalary, String location) throws PostingException {
-        return postingWorkflow.submitPosting(employer, jobTitle, jobDescription,
-            skills, startingSalary, location);
+    public posting createJobPosting(EmployerAccount employer,
+                                    String jobTitle,
+                                    String jobDescription,
+                                    String skills,
+                                    String startingSalary,
+                                    String location) throws PostingException {
+        if (employer == null || !employer.hasPermission("POST_JOB")) {
+            throw new PostingException("Insufficient permissions to create job posting");
+        }
+
+        String companyName = employer.getCompanyName();
+        posting newPosting = postingManager.createPosting(
+                companyName, jobTitle, jobDescription, skills, startingSalary, location);
+        logger.info("Job posting created successfully with ID: {}", newPosting.getId());
+        return newPosting;
     }
 
-    /**
-     * Retrieves all applications for a given employer's job posting.
-     *
-     * @param employer   the employer account
-     * @param postingId  the ID of the posting
-     * @return a list of applications associated with the given posting
-     */
-    public List<application> getApplicationsForEmployer(EmployerAccount employer, String postingId) {
-        posting jobPosting = postingManager.getAllPostings().stream()
-            .filter(p -> p.getId().equals(postingId))
-            .filter(p -> p.getCompanyName().equals(employer.getCompanyName()))
-            .findFirst()
-            .orElseThrow(() -> new IllegalArgumentException("Posting not found or unauthorized"));
-
-        return applicationManager.getApplicationsForPosting(postingId);
-    }
-
-    /**
-     * Searches postings based on given filters.
-     *
-     * @param filters a map of filter criteria (e.g., by location, skills)
-     * @return a list of postings matching the filters
-     */
-    public List<posting> searchPostings(Map<String, String> filters) {
-        return searchService.searchPostings(filters);
-    }
-
-    /**
-     * Retrieves a list of postings that are pending approval for an admin to review.
-     *
-     * @param admin the admin account requesting the list
-     * @return a list of postings pending approval
-     */
-    public List<posting> getPendingPostings(AdminAccount admin) {
-        return postingManager.getAllPostings().stream()
-            .filter(p -> p.getStatus().equals("PENDING_APPROVAL"))
-            .collect(Collectors.toList());
-    }
-
-    /**
-     * Retrieves all applications submitted by a given student.
-     *
-     * @param student the student account
-     * @return a list of applications submitted by the student
-     */
-    public List<application> getStudentApplications(StudentAccount student) {
-        return applicationManager.getApplicationsByUser(student.getId());
-    }
-
-    /**
-     * Retrieves all job postings belonging to a given employer.
-     *
-     * @param employer the employer account
-     * @return a list of the employer's postings
-     */
-    public List<posting> getEmployerPostings(EmployerAccount employer) {
-        return postingManager.getAllPostings().stream()
-                .filter(p -> p.getCompanyName().equals(employer.getCompanyName()))
-                .collect(Collectors.toList());
-    }
-    
-    /**
-     * Retrieves all job postings.
-     *
-     * @return a list of all postings
-     */
-    public List<posting> getAllPostings() {
-        return postingManager.getAllPostings();
-    }
-
-    /**
-     * Retrieves a specific posting by its ID.
-     *
-     * @param id the ID of the posting
-     * @return the posting with the given ID or null if not found
-     */
     public posting getPostingById(String id) {
-        return postingManager.getAllPostings().stream()
-            .filter(p -> p.getId().equals(id))
-            .findFirst()
-            .orElse(null);
+        posting post = postingManager.getPostingById(id);
+        if (post == null) {
+            logger.warn("Posting not found with ID: {}", id);
+        } else {
+            logger.info("Retrieved posting with ID: {}", id);
+        }
+        return post;
     }
 
-    /**
-     * Creates a new posting with the specified details.
-     *
-     * @param companyName    the name of the company
-     * @param jobTitle       the job title
-     * @param jobDescription the job description
-     * @param skills         the required skills
-     * @param startingSalary the starting salary offered
-     * @param location       the job location
-     * @return the newly created posting
-     */
-    public posting createPosting(String companyName, String jobTitle, 
-                                 String jobDescription, String skills, 
-                                 String startingSalary, String location) {
-        return postingManager.createPosting(companyName, jobTitle, jobDescription,
-                                            skills, startingSalary, location);
-    }
-
-    /**
-     * Updates an existing posting with new details.
-     *
-     * @param updatedPosting the posting object containing updated information
-     */
     public void updatePosting(posting updatedPosting) {
         postingManager.updatePosting(updatedPosting);
+        logger.info("Updated posting with ID: {}", updatedPosting.getId());
     }
 
-    /**
-     * Deletes a posting by its ID.
-     *
-     * @param postingId the ID of the posting to delete
-     */
     public void deletePosting(String postingId) {
         postingManager.deletePosting(postingId);
+        logger.info("Deleted posting with ID: {}", postingId);
     }
 
-    /**
-     * Searches postings using a keyword. Matches may be found in company name, job title,
-     * job description, or required skills.
-     *
-     * @param keyword the keyword to search for
-     * @return a list of postings matching the keyword
-     */
     public List<posting> searchPostings(String keyword) {
-        return postingManager.searchPostings(keyword);
+        List<posting> results = postingManager.searchPostings(keyword);
+        logger.info("Search with keyword '{}' returned {} results", keyword, results.size());
+        return results;
     }
 
-    /**
-     * Retrieves all applications associated with a specific posting.
-     *
-     * @param postingId the ID of the posting
-     * @return a list of applications for the specified posting
-     */
+    public List<posting> getAllPostings() {
+        List<posting> postings = postingManager.getAllPostings();
+        logger.info("Retrieved {} total postings", postings.size());
+        return postings;
+    }
+
+    public List<posting> filterPostings(Map<String, String> filters) {
+        List<posting> results = postingManager.filterPostings(filters);
+        logger.info("Filtering postings with {} returned {} results", filters, results.size());
+        return results;
+    }
+
+    public application submitApplication(StudentAccount student, String postingId,
+                                         String firstName, String lastName, String phoneNumber,
+                                         String email, String education, String experience,
+                                         String references) {
+        posting jobPosting = getPostingById(postingId);
+        if (jobPosting == null) {
+            throw new IllegalArgumentException("Posting not found");
+        }
+        application newApp = new application(student, firstName, lastName,
+                phoneNumber, email, education, experience, references, postingId);
+
+        applicationManager.submitApplication(newApp);
+        logger.info("Application submitted successfully for posting ID: {}", postingId);
+        return newApp;
+    }
+
     public List<application> getApplicationsForPosting(String postingId) {
-        return applicationManager.getApplicationsForPosting(postingId);
+        List<application> applications = applicationManager.getApplicationsForPosting(postingId);
+        logger.info("Retrieved {} applications for posting ID: {}", applications.size(), postingId);
+        return applications;
     }
 
-    /**
-     * Retrieves all applications submitted by a specific user.
-     *
-     * @param userId the ID of the user
-     * @return a list of applications submitted by the user
-     */
     public List<application> getApplicationsByUser(String userId) {
-        return applicationManager.getApplicationsByUser(userId);
+        List<application> applications = applicationManager.getApplicationsByUser(userId);
+        logger.info("Retrieved {} applications for user ID: {}", applications.size(), userId);
+        return applications;
     }
 
-    /**
-     * Approves a posting as an admin.
-     *
-     * @param admin     the admin account approving the posting
-     * @param postingId the ID of the posting to approve
-     * @return the approved posting
-     * @throws PostingException if the admin is null or the posting is not found
-     */
+    public application getApplicationById(String applicationId) {
+        application app = applicationManager.getAllApplications().stream()
+                .filter(a -> a.getId().equals(applicationId))
+                .findFirst()
+                .orElse(null);
+        if (app == null) {
+            logger.warn("Application not found with ID: {}", applicationId);
+        } else {
+            logger.info("Retrieved application with ID: {}", applicationId);
+        }
+        return app;
+    }
+
+    public void acceptApplication(EmployerAccount employer, String applicationId) throws ApplicationException {
+        if (!employer.hasPermission("MANAGE_APPLICATIONS")) {
+            throw new ApplicationException("Insufficient permissions to accept applications");
+        }
+        applicationManager.acceptApplication(applicationId);
+        logger.info("Application {} accepted by employer {}", applicationId, employer.getUsername());
+    }
+
+    public void rejectApplication(EmployerAccount employer, String applicationId, String reason) throws ApplicationException {
+        if (!employer.hasPermission("MANAGE_APPLICATIONS")) {
+            throw new ApplicationException("Insufficient permissions to reject applications");
+        }
+        if (reason == null || reason.trim().isEmpty()) {
+            throw new ApplicationException("Rejection reason is required");
+        }
+        applicationManager.rejectApplication(applicationId, reason);
+        logger.info("Application {} rejected by employer {} for reason: {}", applicationId, employer.getUsername(), reason);
+    }
+
     public posting approvePosting(AdminAccount admin, String postingId) throws PostingException {
         if (admin == null) {
             throw new PostingException("Admin account required");
         }
-
-        posting post = getPostingById(postingId);
-        if (post == null) {
+        posting p = getPostingById(postingId);
+        if (p == null) {
             throw new PostingException("Posting not found");
         }
-
-        postingWorkflow.approvePosting(admin, postingId);
-        return post;
+        p.setStatus("APPROVED");
+        postingManager.updatePosting(p);
+        logger.info("Posting {} approved by admin {}", postingId, admin.getUsername());
+        return p;
     }
 
-    /**
-     * Rejects a posting with a specified reason as an admin.
-     *
-     * @param admin     the admin account rejecting the posting
-     * @param postingId the ID of the posting to reject
-     * @param reason    the reason for the rejection
-     * @throws PostingException if the admin is null, the reason is invalid, or the posting is not found
-     */
-    public void rejectPosting(AdminAccount admin, String postingId, String reason) 
-            throws PostingException {
+    public void rejectPosting(AdminAccount admin, String postingId, String reason) throws PostingException {
         if (admin == null) {
             throw new PostingException("Admin account required");
         }
         if (reason == null || reason.trim().isEmpty()) {
             throw new PostingException("Rejection reason is required");
         }
-
-        posting post = getPostingById(postingId);
-        if (post == null) {
+        posting p = getPostingById(postingId);
+        if (p == null) {
             throw new PostingException("Posting not found");
         }
+        p.setStatus("REJECTED");
+        p.setRejectionReason(reason);
+        postingManager.updatePosting(p);
+        logger.info("Posting {} rejected by admin {} for reason: {}", postingId, admin.getUsername(), reason);
+    }
 
-        postingWorkflow.rejectPosting(admin, postingId, reason);
+    public int getActiveJobsCount() {
+        List<posting> allPostings = postingManager.getAllPostings();
+        int count = (int) allPostings.stream()
+                .filter(p -> "APPROVED".equalsIgnoreCase(p.getStatus()))
+                .count();
+        logger.info("Calculated active jobs count: {}", count);
+        return count;
+    }
+
+    public int getCompaniesCount() {
+        List<posting> allPostings = postingManager.getAllPostings();
+        int count = (int) allPostings.stream()
+                .map(posting::getCompanyName)
+                .filter(name -> name != null && !name.trim().isEmpty())
+                .distinct()
+                .count();
+        logger.info("Calculated unique companies count: {}", count);
+        return count;
+    }
+
+    public int getStudentsPlacedCount() {
+        List<application> allApps = applicationManager.getAllApplications();
+        int count = (int) allApps.stream()
+                .filter(a -> "ACCEPTED".equalsIgnoreCase(a.getStatus()))
+                .map(a -> a.getPerson().getId())
+                .filter(Objects::nonNull)
+                .distinct()
+                .count();
+        logger.info("Calculated placed students count: {}", count);
+        return count;
+    }
+
+    public Map<String, Integer> getAllStats() {
+        int activeJobs = getActiveJobsCount();
+        int companies = getCompaniesCount();
+        int studentsPlaced = getStudentsPlacedCount();
+        Map<String, Integer> stats = new HashMap<>();
+        stats.put("activeJobs", activeJobs);
+        stats.put("companies", companies);
+        stats.put("studentsPlaced", studentsPlaced);
+        logger.info("Retrieved all stats: activeJobs={}, companies={}, studentsPlaced={}",
+                activeJobs, companies, studentsPlaced);
+        return stats;
     }
 }

@@ -17,6 +17,8 @@ public class posting {
     private String approvedBy;
     private String rejectionReason;
     private String startingSalary;
+    private String category;    
+    private String jobType;
     private String location;
     private final String id;
     private Queue<application> applicants;
@@ -178,25 +180,9 @@ public class posting {
     public void setLocation(String location) {
         this.location = location;
     }
-    /**
-     * Gets the status of the job.
-     *
-     * @return the job status
-     */
-    public String getStatus() {
-        return status;
-    }
 
-    /**
-     * Sets the status of the job.
-     *
-     * @param newStatus the new status
-     */
-    public void setStatus(String newStatus) {
-        status = newStatus;
-    }
 
-        public void setApprovalDate(LocalDateTime approvalDate) {
+    public void setApprovalDate(LocalDateTime approvalDate) {
         this.approvalDate = approvalDate;
     }
 
@@ -243,6 +229,30 @@ public class posting {
      */
     public String getRejectionReason() {
         return rejectionReason;
+    }
+
+        public String getCategory() {
+        return category;
+    }
+
+    public void setCategory(String category) {
+        this.category = category;
+    }
+
+    public String getJobType() {
+        return jobType;
+    }
+
+    public void setJobType(String jobType) {
+        this.jobType = jobType;
+    }
+
+    public String getStatus() {
+        return status;
+    }
+
+    public void setStatus(String status) {
+        this.status = status;
     }
 
 }

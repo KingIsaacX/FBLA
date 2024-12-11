@@ -6,7 +6,11 @@ import java.security.SecureRandom;
 import java.util.Base64;
 import java.util.UUID;
 
-public abstract class account {
+/**
+ * Represents a generic user account in the system.
+ * Includes common attributes and methods for all account types.
+ */
+public class account {
     private String id;
     private String username;
     private String passwordHash;
@@ -16,7 +20,7 @@ public abstract class account {
     private boolean isActive;
     private String lastLoginDate;
 
-    protected account(String username, String password, String email, String role) {
+    public account(String username, String password, String email, String role) {
         this.id = UUID.randomUUID().toString();
         this.username = username;
         this.salt = generateSalt();
@@ -24,14 +28,15 @@ public abstract class account {
         this.email = email;
         this.role = role;
         this.isActive = true;
+        this.lastLoginDate = "";
     }
 
     // Password encryption methods
     private String generateSalt() {
         SecureRandom random = new SecureRandom();
-        byte[] salt = new byte[16];
-        random.nextBytes(salt);
-        return Base64.getEncoder().encodeToString(salt);
+        byte[] saltBytes = new byte[16];
+        random.nextBytes(saltBytes);
+        return Base64.getEncoder().encodeToString(saltBytes);
     }
 
     private String hashPassword(String password, String salt) {
@@ -45,14 +50,22 @@ public abstract class account {
         }
     }
 
+    /**
+     * Verifies if the provided password matches the stored password hash.
+     *
+     * @param password the password to verify
+     * @return true if the password matches, false otherwise
+     */
     public boolean verifyPassword(String password) {
         String hashedAttempt = hashPassword(password, this.salt);
         return hashedAttempt.equals(this.passwordHash);
     }
 
-    // Common getters and setters
+    // Getters and Setters
     public String getId() { return id; }
     public String getUsername() { return username; }
+    public String getPasswordHash() { return passwordHash; }
+    public String getSalt() { return salt; }
     public String getEmail() { return email; }
     public void setEmail(String email) { this.email = email; }
     public String getRole() { return role; }
@@ -61,7 +74,55 @@ public abstract class account {
     public String getLastLoginDate() { return lastLoginDate; }
     public void setLastLoginDate(String lastLoginDate) { this.lastLoginDate = lastLoginDate; }
 
-    // Abstract methods that must be implemented by child classes
-    public abstract boolean hasPermission(String action);
-    public abstract String getAccountType();
+    /**
+     * Determines if the account has permission to perform a specific action.
+     *
+     * @param action the action to check permission for
+     * @return true if the account has permission, false otherwise
+     */
+    public boolean hasPermission(String action) {
+        switch (role) {
+            case "ADMIN":
+                return true; // Admin has all permissions
+            case "EMPLOYER":
+                switch (action) {
+                    case "POST_JOB":
+                    case "VIEW_APPLICATIONS":
+                    case "UPDATE_JOB":
+                    case "DELETE_JOB":
+                        return true;
+                    default:
+                        return false;
+                }
+            case "STUDENT":
+                switch (action) {
+                    case "APPLY_JOB":
+                    case "VIEW_JOBS":
+                    case "UPDATE_PROFILE":
+                        return true;
+                    default:
+                        return false;
+                }
+            default:
+                return false;
+        }
+    }
+
+    /**
+     * Returns a user-friendly account type based on the role.
+     *
+     * @return the account type as a string
+     */
+    public String getAccountType() {
+        switch (role) {
+            case "ADMIN":
+                return "Administrator";
+            case "EMPLOYER":
+                return "Employer";
+            case "STUDENT":
+                return "Student";
+            default:
+                return "User";
+        }
+    }
 }

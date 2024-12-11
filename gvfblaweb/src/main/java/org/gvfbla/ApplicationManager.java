@@ -1,53 +1,68 @@
 package org.gvfbla;
 
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
-/**
- * Manages application operations, including submitting applications
- * and retrieving applications by posting or user.
- */
 public class ApplicationManager {
     private List<application> applications;
 
-    /**
-     * Creates a new ApplicationManager and loads existing applications from storage.
-     */
     public ApplicationManager() {
         this.applications = FileStorageManager.loadApplications();
+        if (applications == null) {
+            applications = new ArrayList<>();
+        }
     }
 
-    /**
-     * Submits a new application and saves it to the storage.
-     *
-     * @param app the application to be submitted
-     */
     public void submitApplication(application app) {
         applications.add(app);
         FileStorageManager.saveApplications(applications);
     }
 
-    /**
-     * Retrieves all applications for a given posting.
-     *
-     * @param postingId the ID of the posting
-     * @return a list of applications associated with the specified posting
-     */
     public List<application> getApplicationsForPosting(String postingId) {
         return applications.stream()
-            .filter(a -> a.getPostingId().equals(postingId))
-            .collect(Collectors.toList());
+                .filter(a -> a.getPostingId().equals(postingId))
+                .collect(Collectors.toList());
     }
 
-    /**
-     * Retrieves all applications submitted by a specific user.
-     *
-     * @param userId the ID of the user
-     * @return a list of applications associated with the specified user
-     */
     public List<application> getApplicationsByUser(String userId) {
         return applications.stream()
-            .filter(a -> a.getPerson().getId().equals(userId))
-            .collect(Collectors.toList());
+                .filter(a -> a.getPerson().getId().equals(userId))
+                .collect(Collectors.toList());
+    }
+
+    public List<application> getAllApplications() {
+        return new ArrayList<>(applications);
+    }
+
+    public void acceptApplication(String applicationId) throws ApplicationException {
+        application app = findApplicationById(applicationId);
+        if (!"PENDING".equalsIgnoreCase(app.getStatus())) {
+            throw new ApplicationException("Application already processed");
+        }
+        app.setStatus("ACCEPTED");
+        FileStorageManager.saveApplications(applications);
+    }
+
+    public void rejectApplication(String applicationId, String reason) throws ApplicationException {
+        application app = findApplicationById(applicationId);
+        if (!"PENDING".equalsIgnoreCase(app.getStatus())) {
+            throw new ApplicationException("Application already processed");
+        }
+        app.setStatus("REJECTED");
+        // If you want, you can store reason in application class by adding a field for it
+        // Not currently implemented here, but can be added easily
+        FileStorageManager.saveApplications(applications);
+    }
+
+    private application findApplicationById(String applicationId) throws ApplicationException {
+        Optional<application> appOpt = applications.stream()
+                .filter(a -> a.getId().equals(applicationId))
+                .findFirst();
+        if (appOpt.isEmpty()) {
+            throw new ApplicationException("Application not found");
+        }
+        return appOpt.get();
     }
 }

@@ -2,101 +2,138 @@ package org.gvfbla;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
-/**
- * Manages operations related to job postings, including creation, retrieval, search,
- * deletion, and updating of postings.
- */
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 public class PostingManager {
+    private static final Logger logger = LoggerFactory.getLogger(PostingManager.class);
     private List<posting> postings;
 
-    /**
-     * Creates a new PostingManager and loads the existing postings from storage.
-     */
     public PostingManager() {
         this.postings = FileStorageManager.loadPostings();
+        if (this.postings == null) {
+            this.postings = new ArrayList<>();
+            logger.info("Initialized new empty postings list");
+        } else {
+            logger.info("Loaded {} existing postings", this.postings.size());
+        }
     }
 
-    /**
-     * Creates a new job posting, saves it, and returns the created posting.
-     *
-     * @param companyName     the name of the company
-     * @param jobTitle        the title of the job
-     * @param jobDescription  a description of the job
-     * @param skills          the required skills for the job
-     * @param startingSalary  the starting salary offered
-     * @param location        the location of the job
-     * @return the newly created posting
-     */
+    // Creates a new posting and automatically saves it
     public posting createPosting(String companyName, String jobTitle, String jobDescription,
                                  String skills, String startingSalary, String location) {
         posting newPosting = new posting(companyName, jobTitle, jobDescription,
-                                         skills, startingSalary, location);
-        postings.add(newPosting);
-        FileStorageManager.savePostings(postings);
+                                         skills != null ? skills : "",
+                                         startingSalary != null ? startingSalary : "",
+                                         location != null ? location : "");
+        newPosting.setStatus("PENDING");
+        savePosting(newPosting);
+        logger.info("Created new posting with ID: {}", newPosting.getId());
         return newPosting;
     }
 
-    /**
-     * Retrieves all postings currently available.
-     *
-     * @return a list of all postings
-     */
+    public void savePosting(posting newPosting) {
+        postings.add(newPosting);
+        FileStorageManager.savePostings(postings);
+        logger.info("Saved new posting with ID: {}", newPosting.getId());
+    }
+
+    public posting getPostingById(String postingId) {
+        return postings.stream()
+                .filter(p -> p.getId().equals(postingId))
+                .findFirst()
+                .orElse(null);
+    }
+
+    public void updatePosting(posting updatedPosting) {
+        boolean found = false;
+        for (int i = 0; i < postings.size(); i++) {
+            if (postings.get(i).getId().equals(updatedPosting.getId())) {
+                postings.set(i, updatedPosting);
+                found = true;
+                break;
+            }
+        }
+        if (!found) {
+            logger.warn("No posting found with ID: {}", updatedPosting.getId());
+            throw new IllegalArgumentException("Posting not found");
+        }
+        FileStorageManager.savePostings(postings);
+        logger.info("Updated posting with ID: {}", updatedPosting.getId());
+    }
+
+    public void deletePosting(String postingId) {
+        int sizeBefore = postings.size();
+        postings.removeIf(p -> p.getId().equals(postingId));
+        FileStorageManager.savePostings(postings);
+
+        if (sizeBefore == postings.size()) {
+            logger.warn("No posting found with ID: {}", postingId);
+        } else {
+            logger.info("Deleted posting with ID: {}", postingId);
+        }
+    }
+
+    public List<posting> searchPostings(String keyword) {
+        String lowercaseKeyword = keyword == null ? "" : keyword.toLowerCase();
+        return postings.stream()
+                .filter(p -> matchesKeyword(p, lowercaseKeyword))
+                .collect(Collectors.toList());
+    }
+
     public List<posting> getAllPostings() {
         return new ArrayList<>(postings);
     }
 
-    /**
-     * Searches for postings that match a given keyword in their company name, job title,
-     * job description, or required skills.
-     *
-     * @param keyword the search keyword
-     * @return a list of postings that match the keyword
-     */
-    public List<posting> searchPostings(String keyword) {
+    public List<posting> filterPostings(Map<String, String> filters) {
         return postings.stream()
-            .filter(p -> matchesKeyword(p, keyword.toLowerCase()))
-            .collect(Collectors.toList());
+                .filter(p -> matchesFilters(p, filters))
+                .collect(Collectors.toList());
     }
 
-    /**
-     * Deletes a posting by its ID.
-     *
-     * @param postingId the ID of the posting to delete
-     */
-    public void deletePosting(String postingId) {
-        postings.removeIf(p -> p.getId().equals(postingId));
-        FileStorageManager.savePostings(postings);
+    private boolean matchesKeyword(posting p, String keyword) {
+        if (keyword.isEmpty()) {
+            return true;
+        }
+        return (p.getCompanyName() != null && p.getCompanyName().toLowerCase().contains(keyword)) ||
+               (p.getJobTitle() != null && p.getJobTitle().toLowerCase().contains(keyword)) ||
+               (p.getJobDescription() != null && p.getJobDescription().toLowerCase().contains(keyword)) ||
+               (p.getSkills() != null && p.getSkills().toLowerCase().contains(keyword)) ||
+               (p.getLocation() != null && p.getLocation().toLowerCase().contains(keyword));
     }
 
-    /**
-     * Updates an existing posting with new information and saves the changes.
-     *
-     * @param updatedPosting the posting containing updated details
-     */
-    public void updatePosting(posting updatedPosting) {
-        for (int i = 0; i < postings.size(); i++) {
-            if (postings.get(i).getId().equals(updatedPosting.getId())) {
-                postings.set(i, updatedPosting);
-                break;
+    private boolean matchesFilters(posting p, Map<String, String> filters) {
+        for (Map.Entry<String, String> entry : filters.entrySet()) {
+            if (!matchesSingleFilter(p, entry.getKey(), entry.getValue())) {
+                return false;
             }
         }
-        FileStorageManager.savePostings(postings);
+        return true;
     }
 
-    /**
-     * Checks if a posting matches a given keyword by examining its company name, job title,
-     * job description, and required skills.
-     *
-     * @param p       the posting to check
-     * @param keyword the keyword to match
-     * @return true if the posting matches the keyword, false otherwise
-     */
-    private boolean matchesKeyword(posting p, String keyword) {
-        return p.getCompanyName().toLowerCase().contains(keyword) ||
-               p.getJobTitle().toLowerCase().contains(keyword) ||
-               p.getJobDescription().toLowerCase().contains(keyword) ||
-               p.getSkills().toLowerCase().contains(keyword);
+    private boolean matchesSingleFilter(posting p, String key, String value) {
+        if (value == null || value.trim().isEmpty()) {
+            return true;
+        }
+        String lowerValue = value.toLowerCase().trim();
+
+        switch (key.toLowerCase()) {
+            case "company":
+                return p.getCompanyName() != null && p.getCompanyName().toLowerCase().contains(lowerValue);
+            case "title":
+                return p.getJobTitle() != null && p.getJobTitle().toLowerCase().contains(lowerValue);
+            case "location":
+                return p.getLocation() != null && p.getLocation().toLowerCase().contains(lowerValue);
+            case "skills":
+                return p.getSkills() != null && p.getSkills().toLowerCase().contains(lowerValue);
+            case "status":
+                return p.getStatus() != null && p.getStatus().toLowerCase().equals(lowerValue);
+            default:
+                // Unknown filter key, ignore
+                return true;
+        }
     }
 }
