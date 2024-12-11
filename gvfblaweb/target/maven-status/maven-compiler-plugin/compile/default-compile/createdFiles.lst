@@ -7,7 +7,6 @@ org\gvfbla\api\AuthController.class
 org\gvfbla\api\PostingController.class
 org\gvfbla\api\StatsController.class
 org\gvfbla\FileStorageManager$1.class
-org\gvfbla\api\ApplicationController$AdminRequest.class
 org\gvfbla\RuntimeTypeAdapterFactory$1.class
 org\gvfbla\api\AuthController$LoginRequest.class
 org\gvfbla\PostingManager.class

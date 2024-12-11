@@ -34,6 +34,13 @@ public class AdminController extends BaseApiController {
      * - "/approve": Approves a posting with the given posting ID.
      * - "/reject": Rejects a posting with the given posting ID and a reason.
      *
+     * Request JSON format:
+     * {
+     *   "token": "<base64encodedToken>",
+     *   "postingId": "...",
+     *   "reason": "..." (for reject)
+     * }
+     *
      * @param request  the HttpServletRequest
      * @param response the HttpServletResponse
      * @throws IOException if an I/O error occurs while reading the request or sending the response
@@ -54,25 +61,25 @@ public class AdminController extends BaseApiController {
             }
 
             if ("/approve".equals(path)) {
-                posting approvedPosting = jobBoardController.approvePosting(
-                    admin,
-                    adminRequest.postingId
-                );
+                posting approvedPosting = jobBoardController.approvePosting(admin, adminRequest.postingId);
                 sendJsonResponse(response, Map.of(
                     "message", "Posting approved successfully",
                     "posting", approvedPosting
                 ));
             } else if ("/reject".equals(path)) {
-                jobBoardController.rejectPosting(
-                    admin,
-                    adminRequest.postingId,
-                    adminRequest.reason
-                );
+                if (adminRequest.reason == null || adminRequest.reason.trim().isEmpty()) {
+                    sendError(response, HttpServletResponse.SC_BAD_REQUEST, "Rejection reason is required");
+                    return;
+                }
+                jobBoardController.rejectPosting(admin, adminRequest.postingId, adminRequest.reason);
                 sendJsonResponse(response, Map.of("message", "Posting rejected successfully"));
             } else {
                 sendError(response, HttpServletResponse.SC_NOT_FOUND, "Invalid endpoint");
             }
+        } catch (PostingException e) {
+            sendError(response, HttpServletResponse.SC_BAD_REQUEST, e.getMessage());
         } catch (Exception e) {
+            e.printStackTrace();
             sendError(response, HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "Error processing request");
         }
     }
@@ -94,12 +101,13 @@ public class AdminController extends BaseApiController {
     /**
      * Validates the token and retrieves the associated user account.
      *
+     * Token Format: Base64("id:role:timestamp")
+     *
      * @param token the authentication token
      * @return the account if valid, null otherwise
      */
     private account validateTokenAndGetUser(String token) {
         try {
-            // Decode the token (assuming it's Base64 encoded "id:role:timestamp")
             byte[] decodedBytes = Base64.getDecoder().decode(token);
             String decodedString = new String(decodedBytes);
             String[] parts = decodedString.split(":");
@@ -108,16 +116,13 @@ public class AdminController extends BaseApiController {
             }
             String userId = parts[0];
             String role = parts[1];
-            // Optional: Validate timestamp for token expiration
 
-            // Retrieve the user by ID
             account user = accountManager.findAccountById(userId);
             if (user == null || !user.getRole().equals(role)) {
                 return null;
             }
             return user;
         } catch (IllegalArgumentException e) {
-            // Invalid Base64 encoding
             return null;
         }
     }
@@ -127,8 +132,8 @@ public class AdminController extends BaseApiController {
      * including approving or rejecting a posting.
      */
     private static class AdminRequest {
-        String token;       // Bearer token for admin authentication
+        String token;    // Bearer token for admin authentication
         String postingId;
-        String reason;      // For rejection
+        String reason;   // For rejection
     }
 }
