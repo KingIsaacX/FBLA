@@ -1,12 +1,7 @@
 {
   "jobs": [],
   "users": [
-    {
-      "id": "admin1",
-      "username": "admin",
-      "password": "admin123",
-      "role": "admin"
-    }
+
   ],
   "applications": []
 }
